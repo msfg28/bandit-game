@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Бандит — Город 2.0</title>
+<style>
+:root{--bg:#08090c;--panel:#111318;--panel2:#171922;--line:#282c36;--text:#f5f7fb;--muted:#8d95a5;--red:#e02b38;--red2:#ff4755;--green:#27b36a;--gold:#f0b94b;--blue:#4b8cff;--shadow:0 14px 40px rgba(0,0,0,.35)}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:#080b10;color:var(--text);min-height:100vh;position:relative;overflow-x:hidden}
+body:before{content:"";position:fixed;inset:0;z-index:-2;background:linear-gradient(to bottom,rgba(7,12,20,.35),rgba(5,8,13,.92)),radial-gradient(circle at 20% 18%,rgba(67,105,155,.30),transparent 28%),radial-gradient(circle at 82% 24%,rgba(120,44,58,.25),transparent 26%),linear-gradient(180deg,#16263a 0%,#101a27 38%,#090d14 72%,#05070b 100%)}
+body:after{content:"";position:fixed;left:0;right:0;bottom:0;height:34vh;z-index:-1;opacity:.5;background:linear-gradient(90deg,transparent 0 4%,#070a0f 4% 10%,transparent 10% 13%,#080b11 13% 19%,transparent 19% 23%,#060910 23% 31%,transparent 31% 35%,#080b10 35% 42%,transparent 42% 47%,#070a0f 47% 55%,transparent 55% 60%,#080b10 60% 67%,transparent 67% 72%,#070a0f 72% 80%,transparent 80% 85%,#070a0f 85% 94%,transparent 94%);clip-path:polygon(0 45%,6% 32%,11% 50%,18% 25%,24% 48%,31% 20%,38% 43%,45% 28%,52% 48%,60% 18%,67% 44%,74% 27%,81% 48%,88% 22%,94% 40%,100% 30%,100% 100%,0 100%)}
+.wrap{max-width:1120px;margin:auto;padding:18px}.wrap{max-width:1120px;margin:auto;padding:18px}.top{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:16px}.brand{display:flex;align-items:center;gap:12px}.brandIcon{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(145deg,#f03a46,#8e121a);box-shadow:0 8px 25px rgba(224,43,56,.25);font-size:25px}.brand h1{font-size:24px;letter-spacing:.5px}.brand .muted{font-size:13px}.muted{color:var(--muted)}h1,h2,h3{margin:0 0 10px}h2{font-size:20px}h3{font-size:16px}.card{background:linear-gradient(180deg,rgba(23,25,34,.96),rgba(14,16,21,.96));border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:var(--shadow);backdrop-filter:blur(8px)}.grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin:14px 0}.stat{min-height:92px;position:relative;overflow:hidden}.stat:after{content:"";position:absolute;width:80px;height:80px;right:-30px;bottom:-35px;border-radius:50%;background:rgba(255,255,255,.025)}.stat b{font-size:22px}.stat small{color:var(--muted)}.tabs{display:grid;grid-template-columns:repeat(6,1fr);gap:7px;margin:12px 0}.tabs button{background:#171a22}.tabs button.active{background:linear-gradient(135deg,#b51e29,#e02b38);box-shadow:0 6px 18px rgba(224,43,56,.22)}button{border:1px solid transparent;border-radius:10px;padding:11px 13px;background:linear-gradient(135deg,#b51e29,#e02b38);color:#fff;font-weight:800;cursor:pointer;transition:.18s transform,.18s filter,.18s background;min-height:42px}button:hover:not(:disabled){transform:translateY(-1px);filter:brightness(1.08)}button:active:not(:disabled){transform:translateY(1px)}button:disabled{opacity:.4;cursor:not-allowed}.secondary{background:#252932;border-color:#353a45}.green{background:linear-gradient(135deg,#197b49,#28ae69)}.blue{background:linear-gradient(135deg,#285d98,#397ed0)}.actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:9px}.row{display:flex;justify-content:space-between;align-items:center;gap:12px}.list{display:grid;gap:9px}.item{background:#0d0f14;border:1px solid #252a33;border-radius:12px;padding:12px;transition:.18s border,.18s transform}.item:hover{border-color:#3a404d;transform:translateY(-1px)}input{width:100%;padding:12px;margin:5px 0;border:1px solid #343945;border-radius:10px;background:#0a0c10;color:#fff;outline:none}input:focus{border-color:#e02b38;box-shadow:0 0 0 3px rgba(224,43,56,.12)}.progress{height:9px;background:#242832;border-radius:10px;overflow:hidden;margin-top:7px}.bar{height:100%;background:linear-gradient(90deg,#b51e29,#ff4755);border-radius:10px;transition:width .3s}.badge{display:inline-block;padding:4px 8px;border-radius:7px;background:#252932;color:#dce1ea;font-size:11px;font-weight:700}.hidden{display:none!important}.hero{display:flex;justify-content:space-between;gap:15px;align-items:flex-start;margin-bottom:14px}.heroText{max-width:700px}.notice{margin-top:12px;padding:11px 12px;border-radius:10px;background:#161a22;border:1px solid #292f3a;color:#c9cfda}.toast{position:fixed;right:18px;bottom:18px;z-index:20;max-width:320px;padding:13px 15px;border-radius:12px;background:#191d25;border:1px solid #343a46;box-shadow:var(--shadow);opacity:0;transform:translateY(15px);pointer-events:none;transition:.22s}.toast.show{opacity:1;transform:translateY(0)}.divider{border:0;border-top:1px solid #252a33;margin:18px 0}.danger{color:#ff6972}.success{color:#5ee39a}.gold{color:#f4c86a}.auth{max-width:460px;margin:42px auto;position:relative}.authGlow{position:absolute;inset:35px -35px -25px;background:radial-gradient(circle,rgba(224,43,56,.18),transparent 68%);filter:blur(18px);pointer-events:none}.authPanel{position:relative;padding:30px;border:1px solid rgba(255,255,255,.08);border-radius:24px;background:linear-gradient(145deg,rgba(25,28,38,.97),rgba(10,12,17,.98));box-shadow:0 24px 70px rgba(0,0,0,.48),inset 0 1px 0 rgba(255,255,255,.04);overflow:hidden}.authPanel:before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#8e121a,#ff4755,#8e121a)}.authBrand{display:flex;align-items:center;gap:12px;margin-bottom:27px}.authLogo{width:52px;height:52px;display:grid;place-items:center;border-radius:16px;background:linear-gradient(145deg,#f03a46,#8e121a);box-shadow:0 10px 30px rgba(224,43,56,.3);font-size:25px}.authGame{font-size:18px;font-weight:900;letter-spacing:2px}.authCity{font-size:10px;color:#8d95a5;letter-spacing:2px;margin-top:2px}.authHeader{display:flex;align-items:center;gap:12px;margin-bottom:18px}.authIcon{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:#20232c;font-size:21px}.authHeader h2{font-size:24px;margin:0 0 3px}.authFields label{display:block;font-size:12px;font-weight:800;color:#b8bfcc;margin:12px 0 5px}.authInput{display:flex;align-items:center;gap:9px;background:#090b0f;border:1px solid #343945;border-radius:12px;padding:0 12px}.authInput:focus-within{border-color:#e02b38;box-shadow:0 0 0 4px rgba(224,43,56,.11)}.authInput input{border:0!important;box-shadow:none!important;margin:0;padding:13px 0;background:transparent}.passToggle{min-height:30px;padding:4px 7px;background:transparent;color:#8d95a5}.passToggle:hover{filter:none;transform:none;color:#fff}.authPrimary{width:100%;margin-top:19px;min-height:48px;border-radius:12px;font-size:14px;box-shadow:0 9px 24px rgba(224,43,56,.2)}.authPrimary span{float:right;font-size:20px}.authSwitch{width:100%;margin-top:9px;background:transparent;border:0;color:#8d95a5;min-height:40px}.authSwitch:hover{transform:none;filter:none;color:#fff}.authSwitch b{color:#ff5b66}.authMsg{min-height:20px;text-align:center;font-size:13px;margin-top:8px}.authHint{margin-top:18px;padding:10px 12px;border-radius:10px;background:#14171e;border:1px solid #242934;color:#737b8b;text-align:center;font-size:11px}@media(max-width:560px){.auth{margin:25px auto}.authPanel{padding:23px 18px;border-radius:20px}}.empty{text-align:center;padding:22px;color:var(--muted)}
+.characterView{display:grid;grid-template-columns:280px 1fr;gap:18px;align-items:stretch}
+.avatarStage{min-height:430px;border-radius:18px;border:1px solid #292e39;background:radial-gradient(circle at 50% 25%,#2b303b 0,#151820 42%,#0b0d12 100%);display:grid;place-items:center;overflow:hidden}
+.avatar{width:150px;height:350px;position:relative}
+.avatarHead{position:absolute;width:76px;height:86px;left:37px;top:8px;border-radius:45% 45% 48% 48%;background:#d89a70;border:2px solid rgba(0,0,0,.25)}
+.avatarHead:before,.avatarHead:after{content:"";position:absolute;top:38px;width:7px;height:7px;background:#20242c;border-radius:50%}
+.avatarHead:before{left:22px}.avatarHead:after{right:22px}
+.avatarNeck{position:absolute;width:28px;height:32px;left:61px;top:80px;background:#d89a70}
+.avatarTank{position:absolute;width:92px;height:126px;left:29px;top:104px;background:#c9ced8;border-radius:24px 24px 12px 12px;border:2px solid #9da3af}
+.avatarArm{position:absolute;width:25px;height:112px;top:112px;background:#d89a70;border-radius:15px}
+.avatarArm.left{left:12px;transform:rotate(5deg)}.avatarArm.right{right:12px;transform:rotate(-5deg)}
+.avatarShorts{position:absolute;width:94px;height:72px;left:28px;top:218px;background:#303642;border-radius:8px 8px 16px 16px;border:2px solid #20252e}
+.avatarLeg{position:absolute;width:31px;height:86px;top:278px;background:#d89a70;border-radius:0 0 14px 14px}
+.avatarLeg.left{left:38px}.avatarLeg.right{right:38px}
+.avatarShoe{position:absolute;width:48px;height:18px;top:345px;background:#171a20;border-radius:10px 15px 8px 8px}
+.avatarShoe.left{left:27px}.avatarShoe.right{right:27px}
+.characterInfo{padding:16px}
+@media(max-width:560px){.characterView{grid-template-columns:1fr}.avatarStage{min-height:360px}.avatar{transform:scale(.88)}}
+
+@media(max-width:900px){.grid{grid-template-columns:repeat(3,1fr)}.tabs{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:560px){.wrap{padding:12px}.top{align-items:flex-start}.top .actionsTop{display:flex;flex-direction:column}.grid{grid-template-columns:repeat(2,1fr)}.tabs{grid-template-columns:repeat(2,1fr)}.card{padding:14px}.hero{flex-direction:column}.stat{min-height:82px}.brand h1{font-size:20px}}
+
+.mine-card{margin-top:14px;text-align:center;background:linear-gradient(180deg,#1a1d25,#0d0f14);border:1px solid #343a46;border-radius:18px;padding:18px}.mine-gif{height:190px;border-radius:14px;background:linear-gradient(180deg,#18202a,#0b0e13);display:grid;place-items:center;overflow:hidden;position:relative}.miner{font-size:72px;display:inline-block;animation:mineSwing .55s infinite alternate ease-in-out;transform-origin:50% 85%}.pick{font-size:42px;position:absolute;animation:pickSwing .55s infinite alternate ease-in-out;transform-origin:90% 90%}@keyframes mineSwing{from{transform:rotate(-8deg) translateY(3px)}to{transform:rotate(8deg) translateY(-3px)}}@keyframes pickSwing{from{transform:rotate(-35deg) translate(-8px,-2px)}to{transform:rotate(35deg) translate(8px,2px)}}.mine-reward{font-size:22px;font-weight:900;margin:12px 0}.mine-click{font-size:18px;min-height:54px}.work-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-top:12px}
+.biz-card{display:flex;gap:14px;align-items:stretch;overflow:hidden}.biz-photo{width:180px;min-width:180px;border-radius:12px;overflow:hidden;background:#171922}.biz-photo svg{display:block;width:100%;height:100%}.biz-info{flex:1;min-width:0}.biz-info h3{font-size:18px}.biz-info .row{gap:10px}.biz-info .badge{white-space:nowrap}@media(max-width:600px){.biz-card{display:block}.biz-photo{width:100%;height:150px;margin-bottom:12px}}</style>
+</head>
+<body>
+<div class="wrap">
+<div class="top">
+  <div><h1>🔫 БАНДИТ</h1><div class="muted">Город живёт по своим законам</div></div>
+  <div style="display:flex;gap:7px">
+    <button id="adminBtn" class="blue hidden" onclick="showAdmin()">⚙️ Админка</button>
+    <button id="logoutBtn" class="secondary hidden" onclick="logout()">Выйти</button>
+    <button class="secondary" onclick="resetGame()">Сбросить игру</button>
+  </div>
+</div>
+
+<div id="setup" class="auth">
+  <div class="authGlow"></div>
+  <div class="authPanel">
+    <div class="authBrand"><div class="authLogo">🔫</div><div><div class="authGame">БАНДИТ</div><div class="authCity">ГОРОД 2.0</div></div></div>
+    <div class="authHeader"><div class="authIcon" id="authIcon">🔐</div><div><h2 id="authTitle">Вход</h2><div class="muted" id="authSubtitle">Вернись на улицы города</div></div></div>
+    <div class="authFields">
+      <label for="name">Никнейм</label><div class="authInput"><span>👤</span><input id="name" maxlength="20" autocomplete="username" placeholder="От 3 до 20 символов"></div>
+      <label for="password">Пароль</label><div class="authInput"><span>🔒</span><input id="password" type="password" maxlength="40" autocomplete="current-password" placeholder="Минимум 4 символа"><button type="button" class="passToggle" onclick="togglePassword()">◉</button></div>
+    </div>
+    <button id="authButton" class="authPrimary" onclick="authSubmit()">Войти <span>→</span></button>
+    <button id="authSwitch" class="authSwitch" onclick="toggleAuth()">Нет аккаунта? <b>Регистрация</b></button>
+    <div id="authMsg" class="authMsg"></div><div class="authHint">🛡️ Данные хранятся локально в этом браузере</div>
+  </div>
+</div>
+
+<div id="workMenu" class="card auth hidden"><div class="authHeader"><div class="authIcon">💼</div><div><h2>Выбор работы</h2><div class="muted">Выбери способ заработать деньги</div></div></div><div class="work-options"><button onclick="openMine()">⛏️ Шахта 1<br><span style="font-size:11px;opacity:.8">Добыча камня · +25 ₽/клик</span></button><button class="secondary" onclick="toast('Другие работы появятся позже.')">🏗️ Стройка<br><span style="font-size:11px;opacity:.8">Скоро</span></button></div><button class="secondary" style="margin-top:10px;width:100%" onclick="closeWorkMenu()">Закрыть</button></div>
+<div id="mineMenu" class="card auth hidden"><div class="authHeader"><div class="authIcon">⛏️</div><div><h2>Шахта 1</h2><div class="muted">Ломай камень и получай деньги за каждый удар</div></div></div><div class="mine-card"><div class="mine-gif"><div class="miner">🧍</div><div class="pick">⛏️</div></div><div class="mine-reward">💰 <span id="mineMoney">0</span> ₽</div><button class="mine-click" onclick="mineClick()">⛏️ Ударить по камню +25 ₽</button><div class="muted" style="margin-top:9px">Добыто: <b id="mineClicks">0</b> камней</div></div><button class="secondary" style="margin-top:10px;width:100%" onclick="closeMine()">← Вернуться к работам</button></div>
+<div id="toast" class="toast"></div>
+
+<div id="admin" class="card hidden" style="margin:0 auto 18px;max-width:1120px">
+  <div class="hero"><div><h2>⚙️ Панель администратора</h2><div class="muted">Управление аккаунтами и персонажами</div></div><button class="secondary" onclick="hideAdmin()">Закрыть</button></div>
+  <div class="notice">👑 Администратор: <b>Boss</b></div>
+  <hr class="divider">
+  <div id="adminUsers" class="list"></div>
+</div>
+
+<div id="game" class="hidden">
+  <div class="grid">
+    <div class="card stat">👤 <span id="pname"></span><br><b>Ур. <span id="level"></span></b></div>
+    <div class="card stat">💰 Деньги<br><b id="money"></b> ₽</div>
+    <div class="card stat">❤️ HP<br><b id="hp"></b>/<span id="maxhp"></span></div>
+    <div class="card stat">⭐ Опыт<br><b id="xp"></b>/<span id="needxp"></span></b></div>
+    <div class="card stat">🏆 Репутация<br><b id="rep"></b></div>
+    <div class="card stat">🚗 Машина<br><b id="car"></b></div>
+  </div>
+  <div class="grid" style="grid-template-columns:1fr 1fr;margin-top:-4px">
+    <div class="card"><div class="row"><span class="muted">❤️ Здоровье</span><b><span id="hp2"></span>/<span id="maxhp2"></span></b></div><div class="progress"><div id="hpbar" class="bar"></div></div></div>
+    <div class="card"><div class="row"><span class="muted">⭐ Опыт</span><b><span id="xp2"></span>/<span id="needxp2"></span></b></div><div class="progress"><div id="xpbar" class="bar"></div></div></div>
+  </div>
+
+  <div class="tabs">
+    <button onclick="show('city')">🏙️ Город</button>
+    <button onclick="show('character')">🧍 Персонаж</button>
+    <button onclick="show('shop')">🛒 Магазин</button>
+    <button onclick="show('garage')">🚗 Гараж</button>
+    <button onclick="show('business')">🏪 Бизнес</button>
+    <button class="green" onclick="show('myBusinessesPanel'); renderMyBusinessesPanel()">📦 Мои бизнесы</button>
+    <button onclick="show('missions')">📋 Задания</button>
+    <button onclick="show('gang')">👥 Банда</button>
+    <button onclick="show('rating')">🏆 Рейтинг</button>
+  </div>
+
+  <section id="city" class="card">
+    <div class="hero"><div class="heroText"><h2>🏙️ Улицы</h2><p class="muted">Выбирай занятие. Чем выше уровень и снаряжение, тем опаснее и прибыльнее дела.</p></div><span class="badge">Сезон 2.0</span></div>
+    <div class="actions">
+      <button onclick="openWorkMenu()">💼 Работа</button>
+      <button onclick="rob()">🏦 Ограбление</button>
+      <button onclick="fight()">🥊 Уличная драка</button>
+      <button onclick="race()">🏁 Уличные гонки</button>
+      <button class="green" onclick="heal()">💊 Восстановиться</button>
+    </div>
+    <hr style="border-color:#29292e;margin:16px 0">
+    <h3>🔫 Снаряжение</h3>
+    <div id="equipment"></div>
+  </section>
+
+  <section id="character" class="card hidden">
+    <div class="hero"><div class="heroText"><h2>🧍 Персонаж</h2><p class="muted">Посмотри, как выглядит твой герой.</p></div><span class="badge">Начальный образ</span></div>
+    <div class="characterView">
+      <div class="avatarStage"><div class="avatar">
+        <div class="avatarHead"></div><div class="avatarNeck"></div><div class="avatarTank"></div>
+        <div class="avatarArm left"></div><div class="avatarArm right"></div><div class="avatarShorts"></div>
+        <div class="avatarLeg left"></div><div class="avatarLeg right"></div><div class="avatarShoe left"></div><div class="avatarShoe right"></div>
+      </div></div>
+      <div class="card characterInfo">
+        <h3>👤 <span id="charName">Герой</span></h3>
+        <div class="item">👕 Верх: <b>простая майка</b></div>
+        <div class="item">🩳 Низ: <b>трусы</b></div>
+        <div class="item">👟 Обувь: <b>простая</b></div>
+        <div class="notice">Стартовый образ — простая майка и трусы. Позже сюда можно добавить гардероб, обувь и другие предметы внешности.</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="shop" class="card hidden">
+    <h2>🛒 Оружейный магазин</h2><div class="list" id="weapons"></div>
+  </section>
+
+  <section id="garage" class="card hidden">
+    <h2>🚗 Гараж</h2><div class="list" id="cars"></div>
+  </section>
+
+  <section id="business" class="card hidden">
+    <div class="hero"><div class="heroText"><h2>🏪 Бизнес</h2><p class="muted">Покупай бизнесы и получай пассивный доход каждые 30 секунд.</p></div><span class="badge">Пассивный доход</span></div>
+    <div id="businessList" class="list"></div>
+  </section>
+
+  <section id="myBusinessesPanel" class="card hidden">
+    <div class="hero"><div class="heroText"><h2>📦 Мои бизнесы</h2><p class="muted">Твои купленные бизнесы и их пассивный доход.</p></div><span class="badge" id="myBusinessCount">0/3</span></div>
+    <div id="myBusinessesPanelList" class="list"></div>
+  </section>
+
+  <section id="missions" class="card hidden">
+    <h2>📋 Задания</h2><div class="list" id="missionList"></div>
+  </section>
+
+  <section id="gang" class="card hidden">
+    <h2>👥 Банда</h2>
+    <p id="gangInfo"></p>
+    <div class="actions">
+      <button onclick="gangWork()">💰 Общак</button>
+      <button onclick="gangUpgrade()">⬆️ Улучшить базу</button>
+    </div>
+  </section>
+
+  <section id="rating" class="card hidden">
+    <h2>🏆 Рейтинг города</h2><div class="list" id="ratingList"></div>
+  </section>
+</div>
+</div>
+
+<script>
+const weapons=[
+{id:'knife',name:'Нож',price:0,attack:5},
+{id:'pistol',name:'Пистолет',price:500,attack:15},
+{id:'shotgun',name:'Дробовик',price:1800,attack:30},
+{id:'ak',name:'АК-47',price:6000,attack:55},
+{id:'m4',name:'Штурмовая винтовка',price:14000,attack:85}
+];
+const cars=[
+{id:'none',name:'Нет машины',price:0,speed:0},
+{id:'old',name:'Старый седан',price:2500,speed:10},
+{id:'hatch',name:'Городской хэтчбек',price:4500,speed:14},
+{id:'muscle',name:'Маслкар',price:8500,speed:22},
+{id:'sport',name:'Спорткар',price:10000,speed:25},
+{id:'coupe',name:'Премиум-купе',price:18000,speed:35},
+{id:'super',name:'Суперкар',price:30000,speed:50},
+{id:'hyper',name:'Гиперкар',price:60000,speed:75}
+];
+const businesses=[
+{id:'kiosk',name:'Маленький ларёк',icon:'🛒',price:5000,income:500,interval:30},
+{id:'cafe',name:'Кофейня',icon:'☕',price:25000,income:1200,interval:30},
+{id:'garage',name:'Автомастерская',icon:'🔧',price:75000,income:3000,interval:30},
+{id:'club',name:'Ночной клуб',icon:'🪩',price:180000,income:7500,interval:30}
+];
+const missionTemplates=[
+{name:'Первая кровь',text:'Победи в 3 уличных драках',type:'fight',goal:3,reward:700,xp:80},
+{name:'Лёгкие деньги',text:'Заработай 3000 ₽',type:'money',goal:3000,reward:900,xp:100},
+{name:'Грабитель',text:'Совершить 3 успешных ограбления',type:'rob',goal:3,reward:1200,xp:120},
+{name:'Гонщик',text:'Выиграй 2 уличные гонки',type:'race',goal:2,reward:1500,xp:140}
+];
+let p=null;
+let currentUser=null;
+let authMode='login';
+
+function fresh(name){
+ return {name,level:1,xp:0,money:1000,hp:100,maxhp:100,rep:0,weapon:'knife',car:'none',
+ businesses:{},gang:{level:1,bank:0},stats:{fight:0,rob:0,race:0,moneyEarned:0},missions:missionTemplates.map((m,i)=>({...m,id:i,progress:0,done:false}))};
+}
+function users(){try{return JSON.parse(localStorage.banditUsers||'{}')}catch(e){return {}}}
+function ensureAdmin(){
+ let u=users();
+ if(!u.Boss)u.Boss={password:'1234',admin:true};
+ else{u.Boss.admin=true;u.Boss.password='1234'}
+ saveUsers(u);
+}
+function saveUsers(u){localStorage.banditUsers=JSON.stringify(u)}
+function userKey(){return 'bandit2_'+currentUser}
+function save(){if(currentUser)localStorage[userKey()]=JSON.stringify(p)}
+function normalizePlayer(){
+ if(!p)return;
+ if(!p.businesses||typeof p.businesses!=='object')p.businesses={};
+ if(!p.stats||typeof p.stats!=='object')p.stats={fight:0,rob:0,race:0,moneyEarned:0};
+ if(!p.gang||typeof p.gang!=='object')p.gang={level:1,bank:0};
+}
+function load(){
+ currentUser=localStorage.banditCurrent||null;
+ if(!currentUser){p=null;return}
+ try{p=JSON.parse(localStorage[userKey()])}catch(e){p=null}
+ if(!p){currentUser=null;localStorage.removeItem('banditCurrent')}
+ normalizePlayer();
+}
+function setAuthMessage(t,bad=false){let e=document.getElementById('authMsg');e.textContent=t;e.style.color=bad?'#ff7373':'#999'}
+function toggleAuth(){
+ authMode=authMode==='login'?'register':'login';
+ document.getElementById('authTitle').textContent=authMode==='login'?'Вход':'Регистрация';
+ document.getElementById('authIcon').textContent=authMode==='login'?'🔐':'📝';
+ document.getElementById('authSubtitle').textContent=authMode==='login'?'Вернись на улицы города':'Создай своего героя и начни путь';
+ document.getElementById('authButton').innerHTML=authMode==='login'?'Войти <span>→</span>':'Создать аккаунт <span>→</span>';
+ document.getElementById('authSwitch').innerHTML=authMode==='login'?'Нет аккаунта? <b>Регистрация</b>':'Уже есть аккаунт? <b>Войти</b>';
+ document.getElementById('password').setAttribute('autocomplete',authMode==='login'?'current-password':'new-password');
+ setAuthMessage('');
+}
+function authSubmit(){authMode==='login'?login():register()}
+function togglePassword(){let e=document.getElementById('password');e.type=e.type==='password'?'text':'password'}
+document.getElementById('password').addEventListener('keydown',e=>{if(e.key==='Enter')authSubmit()})
+
+function login(){
+ let n=document.getElementById('name').value.trim(), pw=document.getElementById('password').value;
+ if(n.length<3||n.length>20)return setAuthMessage('Никнейм: от 3 до 20 символов.',true);
+ if(pw.length<4)return setAuthMessage('Пароль должен быть не короче 4 символов.',true);
+ let u=users();
+ if(!u[n])return setAuthMessage('Такого аккаунта нет. Зарегистрируйся.',true);
+ if(u[n].password!==pw)return setAuthMessage('Неверный пароль.',true);
+ currentUser=n;localStorage.banditCurrent=n;
+ try{p=JSON.parse(localStorage[userKey()])}catch(e){p=null}
+ if(!p){p=fresh(n);save()}
+ setAuthMessage('');render();
+}
+function register(){
+ let n=document.getElementById('name').value.trim(), pw=document.getElementById('password').value;
+ if(n.length<3||n.length>20)return setAuthMessage('Никнейм: от 3 до 20 символов.',true);
+ if(!/^[A-Za-zА-Яа-яЁё0-9_]+$/.test(n))return setAuthMessage('Используй только буквы, цифры и _.',true);
+ if(pw.length<4)return setAuthMessage('Пароль должен быть не короче 4 символов.',true);
+ let u=users();
+ if(u[n])return setAuthMessage('Этот никнейм уже занят.',true);
+ u[n]={password:pw};saveUsers(u);
+ currentUser=n;localStorage.banditCurrent=n;p=fresh(n);save();render();
+}
+function showAdmin(){
+ if(currentUser!=='Boss')return toast('Доступ запрещён.','danger');
+ document.getElementById('admin').classList.remove('hidden');
+ renderAdmin();
+ document.getElementById('admin').scrollIntoView({behavior:'smooth'});
+}
+function hideAdmin(){document.getElementById('admin').classList.add('hidden')}
+function renderAdmin(){
+ const u=users(), box=document.getElementById('adminUsers');
+ const names=Object.keys(u);
+ if(!names.length){box.innerHTML='<div class="empty">Аккаунтов нет.</div>';return}
+ box.innerHTML=names.map(n=>{
+   let d=null;try{d=JSON.parse(localStorage['bandit2_'+n]||'null')}catch(e){}
+   return `<div class="item"><div class="row"><div><b>👤 ${n}</b> ${u[n].admin?'<span class="badge">ADMIN</span>':''}<br><span class="muted">${d?`Ур. ${d.level} · ${d.money} ₽ · HP ${d.hp}/${d.maxhp} · Репутация ${d.rep}`:'Персонаж не создан'}</span></div><div style="display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end">${n!=='Boss'?`<button class="green" onclick="adminGive('${n}',10000)">+10 000 ₽</button><button class="blue" onclick="adminLevel('${n}')">+1 уровень</button><button class="secondary" onclick="adminReset('${n}')">Сбросить</button><button class="secondary" onclick="adminDelete('${n}')">Удалить</button>`:''}</div></div></div>`
+ }).join('');
+}
+function adminGive(n,amount){let d=JSON.parse(localStorage['bandit2_'+n]||'null');if(!d)return toast('У игрока нет персонажа.','danger');d.money+=amount;d.stats.moneyEarned+=amount;localStorage['bandit2_'+n]=JSON.stringify(d);renderAdmin();toast(`${n}: +${amount.toLocaleString('ru-RU')} ₽`,'success')}
+function adminLevel(n){let d=JSON.parse(localStorage['bandit2_'+n]||'null');if(!d)return toast('У игрока нет персонажа.','danger');d.level++;d.maxhp+=15;d.hp=d.maxhp;d.rep+=10;localStorage['bandit2_'+n]=JSON.stringify(d);renderAdmin();toast(`${n}: уровень повышен`,'success')}
+function adminReset(n){if(!confirm(`Сбросить персонажа ${n}?`))return;localStorage['bandit2_'+n]=JSON.stringify(fresh(n));renderAdmin();toast(`${n}: персонаж сброшен`)}
+function adminDelete(n){if(!confirm(`Удалить аккаунт ${n}?`))return;let u=users();delete u[n];saveUsers(u);localStorage.removeItem('bandit2_'+n);renderAdmin();toast(`${n}: аккаунт удалён`,'success')}
+
+function logout(){
+ p=null;currentUser=null;localStorage.removeItem('banditCurrent');
+ document.getElementById('name').value='';document.getElementById('password').value='';
+ authMode='login';toggleAuth();render();
+}
+function resetGame(){
+ if(!currentUser)return;
+ if(confirm('Удалить текущего персонажа? Аккаунт и пароль тоже будут удалены.')){
+   let u=users();delete u[currentUser];saveUsers(u);
+   localStorage.removeItem(userKey());localStorage.removeItem('banditCurrent');
+   location.reload();
+ }
+}
+function need(){return p.level*120}
+function addXp(n){
+ p.xp+=n;
+ while(p.xp>=need()){p.xp-=need();p.level++;p.maxhp+=15;p.hp=p.maxhp;p.rep+=10}
+}
+function mission(type,amount=1){
+ p.missions.forEach(m=>{if(!m.done&&m.type===type){m.progress+=amount;if(m.type==='money')m.progress=Math.min(m.progress,p.stats.moneyEarned)}});
+ p.missions.forEach(m=>{if(!m.done&&m.progress>=m.goal){m.done=true;p.money+=m.reward;addXp(m.xp);p.rep+=15}})
+}
+
+let mineSession={money:0,clicks:0};
+function openWorkMenu(){document.getElementById('workMenu').classList.remove('hidden');document.getElementById('game').classList.add('hidden')}
+function closeWorkMenu(){document.getElementById('workMenu').classList.add('hidden');document.getElementById('game').classList.remove('hidden')}
+function openMine(){document.getElementById('workMenu').classList.add('hidden');document.getElementById('mineMenu').classList.remove('hidden');mineSession={money:0,clicks:0};updateMine()}
+function closeMine(){document.getElementById('mineMenu').classList.add('hidden');document.getElementById('game').classList.remove('hidden')}
+function updateMine(){document.getElementById('mineMoney').textContent=mineSession.money.toLocaleString('ru-RU');document.getElementById('mineClicks').textContent=mineSession.clicks}
+function mineClick(){if(!p)return;let gain=25+p.level*5;p.money+=gain;p.stats.moneyEarned+=gain;mineSession.money+=gain;mineSession.clicks++;addXp(3);mission('money');toast(`Камень добыт: +${gain} ₽`,'success');save();updateMine();render()}
+function businessBuy(id){
+ if(!p){toast('Сначала войдите в аккаунт.','danger');return}
+ normalizePlayer();
+ let b=businesses.find(x=>x.id===id);
+ if(!b){toast('Бизнес не найден.','danger');return}
+ if(p.businesses[id]){toast('Этот бизнес уже куплен.','danger');return}
+ const ownedCount=businesses.filter(x=>p.businesses?.[x.id]).length;
+ if(ownedCount>=3){toast('Можно купить максимум 3 бизнеса.','danger');return}
+ if(p.money<b.price){toast('Не хватает денег.','danger');return}
+ p.money-=b.price;
+ p.businesses[id]={last:Date.now()};
+ save();
+ render();
+ const my=document.getElementById('myBusinesses');
+ if(my){my.classList.remove('hidden');renderMyBusinesses();my.scrollIntoView({behavior:'smooth',block:'start'});}
+ toast(`${b.name} куплен за ${b.price.toLocaleString('ru-RU')} ₽!`,'success');
+}
+function businessTick(){
+ if(!p)return; let now=Date.now(), changed=false;
+ businesses.forEach(b=>{let owned=p.businesses?.[b.id]; if(!owned)return; let last=owned.last||now; let cycles=Math.floor((now-last)/(b.interval*1000)); if(cycles>0){let gain=cycles*b.income;p.money+=gain;p.stats.moneyEarned+=gain;owned.last=last+cycles*b.interval*1000;changed=true;toast(`${b.icon} ${b.name}: +${gain.toLocaleString('ru-RU')} ₽`,'success')}});
+ if(changed){save();render()} else renderBusinesses();
+}
+function businessPhoto(b){
+ const art={
+  kiosk:`<svg viewBox="0 0 320 180"><rect width="320" height="180" rx="18" fill="#20252d"/><rect x="38" y="70" width="244" height="86" rx="8" fill="#b8753c"/><rect x="54" y="82" width="212" height="46" rx="6" fill="#8bd1ff"/><path d="M30 72h260l-18-35H48z" fill="#e02b38"/><path d="M48 37h224v35H48z" fill="#f5f7fb"/><text x="160" y="61" text-anchor="middle" font-size="22" font-weight="800" fill="#e02b38">ЛАРЁК</text><rect x="142" y="128" width="36" height="28" fill="#6b472b"/></svg>`,
+  cafe:`<svg viewBox="0 0 320 180"><rect width="320" height="180" rx="18" fill="#30231d"/><rect x="45" y="55" width="230" height="105" rx="10" fill="#b87950"/><rect x="45" y="35" width="230" height="35" fill="#f0b94b"/><text x="160" y="59" text-anchor="middle" font-size="20" font-weight="800">КОФЕ</text><circle cx="160" cy="112" r="24" fill="#fff"/><path d="M150 105q10-20 20 0" fill="none" stroke="#8b5a3c" stroke-width="5"/></svg>`,
+  garage:`<svg viewBox="0 0 320 180"><rect width="320" height="180" rx="18" fill="#20252d"/><rect x="40" y="45" width="240" height="115" rx="8" fill="#59636f"/><rect x="75" y="70" width="170" height="90" fill="#171a20"/><path d="M80 145h160" stroke="#e02b38" stroke-width="8"/><text x="160" y="63" text-anchor="middle" font-size="17" font-weight="800" fill="#fff">АВТОСЕРВИС</text></svg>`,
+  club:`<svg viewBox="0 0 320 180"><rect width="320" height="180" rx="18" fill="#151126"/><rect x="42" y="48" width="236" height="112" rx="12" fill="#39245c"/><circle cx="100" cy="105" r="35" fill="#e02b38" opacity=".8"/><circle cx="220" cy="105" r="35" fill="#4b8cff" opacity=".8"/><text x="160" y="72" text-anchor="middle" font-size="18" font-weight="800" fill="#fff">NIGHT CLUB</text></svg>`
+ };
+ return `<div class="biz-photo">${art[b.id]||art.kiosk}</div>`;
+}
+function businessCard(b, owned){
+ const now=Date.now();
+ const left=owned?Math.max(0,Math.ceil((b.interval*1000-(now-(owned.last||now)))/1000)):b.interval;
+ return `<div class="item biz-card">${businessPhoto(b)}<div class="biz-info">
+   <div class="row"><div><h3 style="margin:0">${b.icon} ${b.name}</h3><span class="muted">${owned?'В собственности':'Доступен для покупки'}</span></div><span class="badge">⏱️ ${left} сек.</span></div>
+   <p class="muted">💰 Доход: <b>+${b.income.toLocaleString('ru-RU')} ₽</b> каждые ${b.interval} сек.</p>
+   <p class="muted">🏷️ Цена: <b>${b.price.toLocaleString('ru-RU')} ₽</b></p>
+   ${owned?'<span class="badge">✓ Куплен</span>':`<button type="button" class="green" onclick="businessBuy('${b.id}')">Купить</button>`}
+ </div></div>`;
+}
+function renderMyBusinessesPanel(){
+ const box=document.getElementById('myBusinessesPanelList'); const count=document.getElementById('myBusinessCount');
+ if(!box||!p)return;
+ const owned=businesses.filter(b=>p.businesses?.[b.id]);
+ if(count) count.textContent=`${owned.length}/3`;
+ box.innerHTML=owned.length?owned.map(b=>businessCard(b,p.businesses[b.id])).join(''):`<div class="item"><b>Пока нет бизнесов</b><br><span class="muted">Зайди в «🏪 Бизнес» и купи первый бизнес.</span></div>`;
+}
+function toggleMyBusinesses(){ show('myBusinessesPanel'); renderMyBusinessesPanel(); }
+function renderMyBusinesses(){ renderMyBusinessesPanel(); }
+function renderBusinesses(){
+ const box=document.getElementById('businessList'); if(!box||!p)return;
+ const ownedCount=businesses.filter(b=>p.businesses?.[b.id]).length;
+ const available=businesses.filter(b=>!p.businesses?.[b.id]);
+ box.innerHTML=`<h3 style="margin-top:18px">🏪 Доступные бизнесы <span class="badge">${ownedCount}/3</span></h3>` +
+ (ownedCount>=3 ? `<div class="notice">Лимит достигнут: можно владеть максимум 3 бизнесами.</div>` : available.map(b=>businessCard(b,null)).join(''));
+ renderMyBusinessesPanel();
+}
+function work(){
+ let gain=Math.floor(100+Math.random()*180)+p.level*25;
+ p.money+=gain;p.stats.moneyEarned+=gain;addXp(18);mission('money');toast(`Подработка: +${gain} ₽`,'success');save();render()
+}
+function rob(){
+ let chance=Math.min(.9,.45+p.level*.035+p.rep*.001);
+ if(Math.random()<chance){
+   let gain=Math.floor(400+Math.random()*900)+p.level*100;p.money+=gain;p.stats.rob++;p.stats.moneyEarned+=gain;p.rep+=4;addXp(55);mission('rob');mission('money');toast(`Ограбление удалось: +${gain} ₽`,'success')
+ }else{p.hp=Math.max(1,p.hp-Math.floor(12+Math.random()*32));p.rep=Math.max(0,p.rep-2)}
+ save();render()
+}
+function fight(){
+ let w=weapons.find(x=>x.id===p.weapon), enemy=25+p.level*14+Math.random()*60;
+ if(w.attack+p.level*4+Math.random()*30>enemy){let gain=Math.floor(180+Math.random()*550);p.money+=gain;p.stats.fight++;p.stats.moneyEarned+=gain;p.rep+=6;addXp(38);mission('fight');mission('money');toast(`Победа в драке: +${gain} ₽`,'success')}
+ else{let dmg=Math.floor(18+Math.random()*38);p.hp=Math.max(1,p.hp-dmg);toast(`Поражение: -${dmg} HP`,'danger')}
+ save();render()
+}
+function race(){
+ let c=cars.find(x=>x.id===p.car);
+ if(c.speed===0){toast('Нужна машина для гонок.','danger');return}
+ let chance=Math.min(.9,.35+c.speed*.008+p.level*.02);
+ if(Math.random()<chance){let gain=Math.floor(350+Math.random()*1000)+c.speed*8;p.money+=gain;p.stats.race++;p.stats.moneyEarned+=gain;p.rep+=8;addXp(50);mission('race');mission('money');toast(`Гонка выиграна: +${gain} ₽`,'success')}
+ else{p.hp=Math.max(1,p.hp-10);toast('Гонка проиграна: -10 HP','danger')}
+ save();render()
+}
+function heal(){let cost=120;if(p.hp>=p.maxhp){toast('Здоровье уже полностью восстановлено.');return}if(p.money<cost){toast('Не хватает денег.','danger');return}p.money-=cost;p.hp=p.maxhp;toast(`Восстановление: -${cost} ₽`);save();render()}
+function buyWeapon(id){let w=weapons.find(x=>x.id===id);let cur=weapons.find(x=>x.id===p.weapon);if(w.price>p.money||w.attack<=cur.attack)return;p.money-=w.price;p.weapon=id;toast(`Оружие установлено: ${w.name}`,'success');save();render()}
+function buyCar(id){let c=cars.find(x=>x.id===id);let cur=cars.find(x=>x.id===p.car);if(c.price>p.money||c.speed<=cur.speed)return;p.money-=c.price;p.car=id;toast(`Машина куплена: ${c.name}`,'success');save();render()}
+function gangWork(){let gain=120+p.gang.level*100;p.gang.bank+=gain;p.money+=gain;toast(`Общак: +${gain} ₽`,'success');save();render()}
+function gangUpgrade(){let cost=p.gang.level*3000;if(p.money<cost){toast('Не хватает денег.','danger');return}p.money-=cost;p.gang.level++;toast(`База улучшена до уровня ${p.gang.level}`,'success');save();render()}
+function show(id){document.querySelectorAll('section').forEach(x=>x.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');setTabActive(id)}
+function toast(msg,type='normal'){const e=document.getElementById('toast');e.textContent=msg;e.className='toast show';if(type==='success')e.style.borderColor='#2d8b5b';if(type==='danger')e.style.borderColor='#9b3139';clearTimeout(window._toast);window._toast=setTimeout(()=>e.className='toast',2200)}
+function actionResult(ok,win,lose){toast(ok?win:lose,ok?'success':'danger')}
+function setTabActive(id){document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('active',b.getAttribute('onclick')===`show('${id}')`))}
+function render(){
+ document.getElementById('setup').classList.toggle('hidden',!!p);
+ document.getElementById('game').classList.toggle('hidden',!p);
+ document.getElementById('logoutBtn').classList.toggle('hidden',!p);
+  document.getElementById('adminBtn').classList.toggle('hidden',currentUser!=='Boss');
+  if(currentUser!=='Boss')hideAdmin();
+ if(!p)return;
+ let w=weapons.find(x=>x.id===p.weapon),c=cars.find(x=>x.id===p.car);
+ pname.textContent=p.name;level.textContent=p.level;document.getElementById('charName').textContent=p.name;money.textContent=p.money.toLocaleString('ru-RU');hp.textContent=p.hp;maxhp.textContent=p.maxhp;xp.textContent=p.xp;needxp.textContent=need();rep.textContent=p.rep;car.textContent=c.name;hp2.textContent=p.hp;maxhp2.textContent=p.maxhp;xp2.textContent=p.xp;needxp2.textContent=need();hpbar.style.width=Math.max(0,p.hp/p.maxhp*100)+'%';xpbar.style.width=Math.min(100,p.xp/need()*100)+'%';
+ equipment.innerHTML=`${w.name} · атака ${w.attack} <span class="badge">Репутация ${p.rep}</span>`;
+ weapons.innerHTML=weaponsList();
+ cars.innerHTML=carsList();
+ missionList.innerHTML=p.missions.map(m=>`<div class="item"><b>${m.name}</b><br>${m.text}<br><span class="muted">${m.done?'Выполнено':m.progress+' / '+m.goal+' · Награда '+m.reward+' ₽'}</span></div>`).join('');
+ gangInfo.innerHTML=`Уровень банды: <b>${p.gang.level}</b> · Общак: <b>${p.gang.bank} ₽</b><br><span class="muted">Улучшение базы: ${p.gang.level*3000} ₽</span>`;
+ renderBusinesses();
+ ratingList.innerHTML=[...Array(8)].map((_,i)=>{let score=Math.max(1,p.rep*10+p.level*100-i*73);return `<div class="item row"><span>${i+1}. ${i===0?p.name:['Ворон','Клык','Мясник','Рико','Шрам','Босс','Тень'][i-1]}</span><b>${score}</b></div>`}).join('');
+}
+function weaponsList(){let cur=weapons.find(x=>x.id===p.weapon);return weapons.map(x=>`<div class="item row"><div>🔫 <b>${x.name}</b><br><span class="muted">Атака ${x.attack} · ${x.price} ₽</span></div><button ${x.attack<=cur.attack?'disabled':''} onclick="buyWeapon('${x.id}')">${x.attack<=cur.attack?'Установлено':'Купить'}</button></div>`).join('')}
+function carsList(){let cur=cars.find(x=>x.id===p.car);return cars.map(x=>`<div class="item row"><div>🚗 <b>${x.name}</b><br><span class="muted">Скорость +${x.speed} · ${x.price} ₽</span></div><button ${x.speed<=cur.speed?'disabled':''} onclick="buyCar('${x.id}')">${x.speed<=cur.speed?'Установлено':'Купить'}</button></div>`).join('')}
+ensureAdmin();load();render();setInterval(businessTick,1000)
+</script>
+</body>
+</html>
