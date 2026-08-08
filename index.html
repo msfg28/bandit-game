@@ -428,8 +428,7 @@ function weaponsList(){let cur=weapons.find(x=>x.id===p.weapon);return weapons.m
 function carsList(){let cur=cars.find(x=>x.id===p.car);return cars.map(x=>`<div class="item row"><div>🚗 <b>${x.name}</b><br><span class="muted">Скорость +${x.speed} · ${x.price} ₽</span></div><button ${x.speed<=cur.speed?'disabled':''} onclick="buyCar('${x.id}')">${x.speed<=cur.speed?'Установлено':'Купить'}</button></div>`).join('')}
 ensureAdmin();load();render();setInterval(businessTick,1000)
 </script>
-  <script>
-const CURRENT_VERSION = "1.0.0";
+  const CURRENT_VERSION = "1.0.0";
 
 async function checkForUpdate() {
     try {
