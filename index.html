@@ -1,0 +1,1398 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BANDIT GAME 2.0 — Rebuild</title>
+<style>
+:root{
+ --red:#ff2633;--red2:#b70f1d;--bg:#05070b;--panel:#0b0f16;--panel2:#11161f;
+ --line:rgba(255,255,255,.10);--muted:#8d95a3;--green:#35d37a;--gold:#ffc84a;
+ --shadow:0 30px 100px rgba(0,0,0,.65);
+}
+*{box-sizing:border-box} html,body{margin:0;min-height:100%;background:#030508;color:#f6f7f9;font-family:Inter,Segoe UI,Arial,sans-serif}
+button,input,select{font:inherit} button{cursor:pointer}
+body{overflow-x:hidden}
+.hidden{display:none!important}
+#app{min-height:100vh;position:relative;background:
+ radial-gradient(circle at 78% 12%,rgba(255,35,45,.12),transparent 28%),
+ radial-gradient(circle at 15% 80%,rgba(40,90,160,.09),transparent 30%),
+ linear-gradient(145deg,#020408,#080c12 52%,#04060a)}
+#cityFX{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+.building{position:absolute;bottom:0;background:linear-gradient(180deg,#111722,#05070b);border:1px solid rgba(255,255,255,.025)}
+.window{position:absolute;width:3px;height:6px;background:#ffc84a;opacity:.35;box-shadow:0 0 8px #ffc84a}
+.rain{position:absolute;width:1px;height:30px;background:linear-gradient(transparent,rgba(255,255,255,.25));animation:rain 1.2s linear infinite}
+@keyframes rain{from{transform:translateY(-50px)}to{transform:translateY(110vh)}}
+@keyframes rise{from{opacity:0;transform:translateY(22px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes pop{0%{transform:scale(.92);opacity:0}70%{transform:scale(1.02)}100%{transform:scale(1);opacity:1}}
+@keyframes pulse{50%{box-shadow:0 0 0 7px rgba(255,38,51,.08),0 0 30px rgba(255,38,51,.18)}}
+@keyframes shake{20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* AUTH */
+#auth{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:22px;background:
+ linear-gradient(90deg,rgba(3,5,9,.96),rgba(3,5,9,.68) 43%,rgba(3,5,9,.90)),
+ radial-gradient(circle at 75% 40%,rgba(255,38,51,.12),transparent 38%)}
+.authScene{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.authScene:after{content:"";position:absolute;inset:0;background:
+ linear-gradient(0deg,rgba(3,5,8,.96),transparent 35%),
+ radial-gradient(circle at 68% 28%,rgba(255,38,51,.18),transparent 24%)}
+.authLayout{width:min(1400px,100%);display:grid;grid-template-columns:1fr 1.18fr;gap:45px;align-items:center;position:relative;z-index:2}
+.brandSide{padding:35px 20px}
+.brandLogo{font-weight:1000;font-style:italic;font-size:clamp(54px,7vw,104px);line-height:.76;letter-spacing:-.07em;color:#ff272f;text-shadow:0 0 30px rgba(255,38,51,.22);transform:skew(-8deg)}
+.brandGame{font-weight:900;font-style:italic;font-size:clamp(36px,4vw,62px);margin-left:95px;margin-top:15px;transform:rotate(-5deg)}
+.brandVer{margin-left:200px;color:#ff2633;font-size:24px;font-weight:900}
+.story{margin-top:90px;max-width:430px}.story h2{font-size:30px;margin:0}.story strong{display:block;color:#ff3340;font-size:30px;margin-top:4px}.story p{color:#b4bac4;line-height:1.7}
+.perks{display:flex;gap:18px;margin-top:35px}.perk{width:130px;text-align:center;color:#aeb5c0;font-size:11px}.perkIcon{margin:auto auto 10px;width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:#121822;border:1px solid var(--line);font-size:23px}
+.authCard{width:min(760px,100%);background:linear-gradient(145deg,rgba(18,19,25,.96),rgba(6,9,14,.98));border:1px solid rgba(255,38,51,.8);border-radius:30px;padding:34px 38px;box-shadow:0 0 55px rgba(255,38,51,.15),var(--shadow);animation:rise .45s ease}
+.authTitle{text-align:center;font-size:38px;color:#ff4a55;font-weight:1000;letter-spacing:.03em}.authSub{text-align:center;color:#a4aab5;margin:5px 0 25px}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin:10px 0 30px;position:relative}.steps:before{content:"";position:absolute;left:10%;right:10%;top:24px;height:1px;background:#3b3f48}.step{position:relative;text-align:center;color:#858c98;font-size:12px}.stepDot{width:48px;height:48px;border-radius:50%;margin:auto;display:grid;place-items:center;background:#11151c;border:2px solid #454a54;position:relative;z-index:1}.step.active{color:#ff4652}.step.active .stepDot{border-color:#ff3340;box-shadow:0 0 22px rgba(255,38,51,.2);animation:pulse 1.7s infinite}.step.done .stepDot{border-color:#35d37a;color:#35d37a}
+.formGrid{display:grid;grid-template-columns:1fr 1fr;gap:16px 20px}.field label{display:block;color:#c4c8d0;font-size:14px;margin:0 0 8px}.inputWrap{position:relative}.input,.select{width:100%;height:52px;border-radius:12px;border:1px solid #383d47;background:#080b10;color:#fff;padding:0 15px;outline:none}.input:focus,.select:focus{border-color:#ff3340;box-shadow:0 0 0 3px rgba(255,38,51,.08)}.field.full{grid-column:1/-1}
+.gender{display:grid;grid-template-columns:1fr 1fr;gap:12px}.choice{height:52px;border:1px solid #373c46;border-radius:12px;background:#0b0f15;color:#9299a5}.choice.active{border-color:#ff3340;color:#fff;background:rgba(255,38,51,.09)}
+.styles{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.style{min-height:112px;border:1px solid #343943;border-radius:14px;background:#0c1016;color:#aeb4bf;padding:12px}.style.active{border-color:#ff3340;color:#fff;background:rgba(255,38,51,.10);box-shadow:inset 0 0 30px rgba(255,38,51,.04)}.styleIcon{font-size:37px}.style b{display:block;margin-top:4px}.style small{color:#858c98}
+.rules{display:flex;gap:10px;align-items:flex-start;color:#aeb4bf;font-size:12px;margin:18px 0}.rules input{accent-color:#ff3340;width:18px;height:18px}.rules a{color:#ff4b55}
+.primary{width:100%;height:60px;border:0;border-radius:13px;background:linear-gradient(135deg,#ff3542,#e11929);color:#fff;font-weight:1000;letter-spacing:.08em;box-shadow:0 12px 30px rgba(255,38,51,.2);transition:.18s}.primary:hover{transform:translateY(-2px);filter:brightness(1.08)}.primary:active{transform:translateY(1px)}
+.authBottom{text-align:center;color:#858c98;margin-top:18px}.link{color:#ff4651;background:none;border:0}.error{min-height:20px;text-align:center;color:#ff6872;font-size:12px;margin:8px 0}.success{color:#35d37a}
+.loginBox{display:none}.loginBox.active{display:block;animation:rise .25s}.registerBox{display:block}.authSwitch{display:flex;justify-content:center;gap:8px;margin-bottom:15px}.authSwitch button{background:none;border:0;color:#858c98}.authSwitch button.active{color:#ff4651}
+
+/* GAME */
+#game{position:relative;z-index:2;min-height:100vh;padding-bottom:30px}.topbar{position:sticky;top:0;z-index:100;background:rgba(5,8,12,.92);backdrop-filter:blur(18px);border-bottom:1px solid var(--line);padding:12px 18px}.nav{max-width:1400px;margin:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}.navBrand{font-weight:1000;letter-spacing:.12em;font-size:20px;margin-right:15px}.navBtn{height:40px;border:1px solid var(--line);border-radius:10px;background:#0d131b;color:#b9c0ca;padding:0 14px;font-size:12px}.navBtn.active,.navBtn:hover{color:#fff;border-color:#ff3340;background:rgba(255,38,51,.09)}
+.hud{max-width:1400px;margin:12px auto;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:0 18px}.stat{background:rgba(12,17,24,.9);border:1px solid var(--line);border-radius:14px;padding:13px}.stat small{display:block;color:#7d8694;font-size:10px;text-transform:uppercase}.stat b{font-size:19px}.content{max-width:1400px;margin:auto;padding:0 18px}.page{display:none;animation:rise .25s}.page.active{display:block}.hero{margin-top:15px;padding:30px;border-radius:22px;background:linear-gradient(135deg,#0d131b,#070a0f);border:1px solid var(--line)}.hero h1{margin:0;font-size:34px}.hero p{color:#8d95a3}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:15px}.card{background:rgba(12,17,24,.9);border:1px solid var(--line);border-radius:16px;padding:18px}.card h3{margin:0 0 7px}.muted{color:#858d9b;font-size:12px}.action{margin-top:12px;width:100%;height:40px;border:1px solid var(--line);border-radius:10px;background:#101720;color:#fff}.action:hover{border-color:#ff3340}.money{color:#ffd15b}.green{color:#35d37a}.red{color:#ff4652}
+.jobGrid,.shopGrid,.vehicleGrid,.businessGrid,.clanGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.tag{display:inline-block;padding:4px 7px;border-radius:7px;background:#151c26;color:#9da5b3;font-size:9px;margin-right:5px}.bar{height:8px;border-radius:99px;background:#1b222d;overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,#ff2633,#ff6a71);border-radius:99px}
+.table{width:100%;border-collapse:collapse;font-size:12px}.table th,.table td{text-align:left;padding:10px;border-bottom:1px solid var(--line)}.table th{color:#858d9b}
+.modal{position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.75);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;padding:20px}.modal.open{display:flex}.modalBox{width:min(760px,100%);max-height:90vh;overflow:auto;background:#0b1017;border:1px solid var(--line);border-radius:20px;padding:22px;animation:pop .2s}.modalHead{display:flex;justify-content:space-between;align-items:center}.close{background:#171d26;color:#fff;border:1px solid var(--line);border-radius:9px;width:35px;height:35px}
+.adminStats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}.adminTools{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.tool{padding:15px;border:1px solid var(--line);border-radius:13px;background:#0d131b}.tool input,.tool select{width:100%;height:40px;margin:5px 0;background:#080b10;color:#fff;border:1px solid #333a45;border-radius:8px;padding:0 9px}
+
+.commandOutput{
+  margin:12px 0;
+  min-height:120px;
+  max-height:280px;
+  overflow:auto;
+  padding:14px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:#070a0f;
+  color:#cbd2dc;
+  white-space:pre-wrap;
+  font:12px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace;
+}
+.authOnly{position:relative;z-index:10}
+#game{position:relative;z-index:5}
+@keyframes authGlow{0%,100%{filter:drop-shadow(0 0 0 rgba(255,38,51,0))}50%{filter:drop-shadow(0 0 16px rgba(255,38,51,.18))}}
+.authCard{animation:pop .45s ease both,authGlow 4s ease-in-out infinite}
+.toast{position:fixed;right:20px;bottom:20px;z-index:2000;max-width:360px;padding:14px 17px;background:#0d141c;border:1px solid var(--line);border-left:3px solid #ff3340;border-radius:12px;box-shadow:var(--shadow);animation:rise .25s}
+@media(max-width:950px){.authLayout{grid-template-columns:1fr}.brandSide{display:none}.authCard{max-width:760px}.cards,.jobGrid,.shopGrid,.vehicleGrid,.businessGrid,.clanGrid{grid-template-columns:1fr 1fr}.hud{grid-template-columns:1fr 1fr}}
+@media(max-width:620px){.authCard{padding:22px 16px}.formGrid{grid-template-columns:1fr}.field.full{grid-column:auto}.styles{grid-template-columns:1fr}.cards,.jobGrid,.shopGrid,.vehicleGrid,.businessGrid,.clanGrid,.adminTools{grid-template-columns:1fr}.hud{grid-template-columns:1fr 1fr}.brandLogo{font-size:60px}}
+</style>
+
+<style id="registration-final-fix">
+#auth .authCard .primary,
+#auth button[type="submit"],
+#auth .register-submit,
+#auth .next-step,
+#auth .create-account{
+  display:flex !important;
+  visibility:visible !important;
+  opacity:1 !important;
+  pointer-events:auto !important;
+}
+#auth .primary{
+  min-height:58px;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+}
+#auth .formError{
+  display:block;
+  min-height:20px;
+}
+</style>
+
+
+<style id="final-registration-button-fix">
+.registrationAction{
+  display:block !important;
+  width:100% !important;
+  margin-top:20px !important;
+}
+#registerBtn{
+  display:flex !important;
+  width:100% !important;
+  min-height:56px !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:10px !important;
+  opacity:1 !important;
+  visibility:visible !important;
+  pointer-events:auto !important;
+  cursor:pointer !important;
+}
+#regError{
+  min-height:22px;
+  margin-top:8px;
+  text-align:center;
+}
+</style>
+
+
+<style id="supabase-status-style">
+.supabaseStatus{position:fixed;left:18px;bottom:16px;z-index:99998;font:12px/1.2 system-ui;color:#9aa4b2;background:rgba(8,11,16,.85);border:1px solid rgba(255,255,255,.08);border-radius:999px;padding:7px 10px;backdrop-filter:blur(10px)}
+.supabaseStatus b{color:#47d18c}
+</style>
+
+</head>
+<body>
+<div id="app">
+  <div id="cityFX"></div>
+
+  <section id="auth" class="authOnly">
+    <div class="authScene"></div>
+    <div class="authLayout">
+      <div class="brandSide">
+        <div class="brandLogo">BANDIT</div>
+        <div class="brandGame">GAME</div>
+        <div class="brandVer">2.0</div>
+        <div class="story">
+          <h2>ТВОЯ ИСТОРИЯ</h2><strong>НАЧИНАЕТСЯ ЗДЕСЬ</strong>
+          <p>Создай персонажа и начни свою жизнь в жёстком мире улиц. Зарабатывай, развивайся и стань легендой.</p>
+        </div>
+        <div class="perks">
+          <div class="perk"><div class="perkIcon">🥷</div>ОПАСНЫЙ МИР</div>
+          <div class="perk"><div class="perkIcon">💰</div>ЗАРАБАТЫВАЙ</div>
+          <div class="perk"><div class="perkIcon">👑</div>СТАНЬ ЛЕГЕНДОЙ</div>
+        </div>
+      </div>
+
+      <div class="authCard">
+        <div class="authTitle" id="authTitle">РЕГИСТРАЦИЯ</div>
+        <div class="authSub" id="authSub">Создай свой аккаунт</div>
+        <div class="authSwitch">
+          <button id="registerSwitch" class="active">Регистрация</button>
+          <button id="loginSwitch">Уже есть аккаунт? Войти</button>
+        </div>
+
+        <div class="steps" id="steps">
+          <div class="step active"><div class="stepDot">👤</div><div>Данные</div></div>
+          <div class="step"><div class="stepDot">🎭</div><div>Персонаж</div></div>
+          <div class="step"><div class="stepDot">✓</div><div>Проверка</div></div>
+          <div class="step"><div class="stepDot">★</div><div>Готово</div></div>
+        </div>
+
+        <form id="registerForm" class="registerBox">
+          <div class="formGrid">
+            <div class="field"><label>Никнейм</label><input id="regName" class="input" maxlength="20" placeholder="3–20 символов" autocomplete="username"></div>
+            <div class="field"><label>Пароль</label><input id="regPass" class="input" type="password" maxlength="50" placeholder="Минимум 4 символа" autocomplete="new-password"></div>
+            <div class="field"><label>Повторите пароль</label><input id="regPass2" class="input" type="password" maxlength="50" placeholder="Повторите пароль" autocomplete="new-password"></div>
+            <div class="field"><label>Возраст</label><select id="regAge" class="select"><option value="">Выберите возраст</option></select></div>
+            <div class="field"><label>Пол</label><div class="gender"><button type="button" class="choice active" data-gender="male">♂ Мужской</button><button type="button" class="choice" data-gender="female">♀ Женский</button></div></div>
+            <div class="field"><label>Город</label><input id="regCity" class="input" maxlength="30" placeholder="Введите ваш город"></div>
+            <div class="field full"><label>Стиль персонажа</label><div class="styles">
+              <button type="button" class="style active" data-style="street"><div class="styleIcon">🥷</div><b>Уличный</b><small>Свобода и хаос</small></button>
+              <button type="button" class="style" data-style="classic"><div class="styleIcon">🕴️</div><b>Классический</b><small>Стиль и уважение</small></button>
+              <button type="button" class="style" data-style="sport"><div class="styleIcon">🏎️</div><b>Спортивный</b><small>Скорость и драйв</small></button>
+            </div></div>
+          </div>
+          <label class="rules"><input id="regRules" type="checkbox"><span>Я соглашаюсь с <a href="#" onclick="return false">правилами проекта</a> и политикой конфиденциальности</span></label>
+<div class="registrationAction">
+  <button id="registerBtn" type="submit" class="primary register-submit">
+    <span>✓</span> СОЗДАТЬ АККАУНТ <span>→</span>
+  </button>
+  <div id="regError" class="formError" aria-live="polite"></div>
+</div>
+</form>
+
+        <form id="loginForm" class="loginBox">
+<div id="masta-login-hint" style="margin:10px 0;padding:10px 12px;border-radius:10px;background:rgba(255,190,60,.08);border:1px solid rgba(255,190,60,.2);font-size:12px;color:#d8c99a">
+  👑 Владелец: <b>masta</b> · пароль: <b>123456</b>
+</div>
+
+          <div class="formGrid">
+            <div class="field full"><label>Никнейм</label><input id="loginName" class="input" autocomplete="username" placeholder="Ваш никнейм"></div>
+            <div class="field full"><label>Пароль</label><input id="loginPass" class="input" type="password" autocomplete="current-password" placeholder="Ваш пароль"></div>
+          </div>
+          <div id="loginError" class="error"></div>
+          <button class="primary" type="submit">ВОЙТИ В ГОРОД →</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <section id="game" class="hidden">
+    <header class="topbar"><nav class="nav">
+      <div class="navBrand">BANDIT</div>
+      <button class="navBtn active" data-page="home">🏠 Главная</button>
+      <button class="navBtn" data-page="character">♟ Персонаж</button>
+      <button class="navBtn" data-page="jobs">💼 Работа</button>
+      <button class="navBtn" data-page="shop">🛒 Магазин</button>
+      <button class="navBtn" data-page="vehicles">🏎 Машины</button>
+      <button class="navBtn" data-page="business">🏢 Бизнес</button>
+      <button class="navBtn" data-page="clans">⚔ Кланы</button>
+      <button class="navBtn" data-page="settings">⚙ Настройки</button>
+    </nav></header>
+    <div class="hud">
+      <div class="stat"><small>💰 Деньги</small><b id="hudMoney" class="money">0 ₽</b></div>
+      <div class="stat"><small>⭐ Уровень</small><b id="hudLevel">1</b></div>
+      <div class="stat"><small>XP</small><b id="hudXP">0 / 100</b></div>
+      <div class="stat"><small>🏆 Репутация</small><b id="hudRep">0</b></div>
+    </div>
+    <main class="content">
+      <section class="page active" id="page-home">
+        <div class="hero"><h1>Город ждёт тебя, <span id="heroName"></span>.</h1><p>Выбирай работу, покупай машины, развивай бизнес и собирай репутацию.</p><div id="homeMission"></div></div>
+        <div class="cards">
+          <div class="card"><h3>💼 Быстрый заработок</h3><p class="muted">Такси — 10 секунд на поездку. Награда зависит от маршрута.</p><button class="action" onclick="Game.openPage('jobs')">Открыть работы</button></div>
+          <div class="card"><h3>🏎 Гараж</h3><p class="muted">Покупай машины и улучшай скорость, управление и прочность.</p><button class="action" onclick="Game.openPage('vehicles')">Открыть гараж</button></div>
+          <div class="card"><h3>🎯 Миссии</h3><p class="muted" id="missionCard">Загрузка...</p><button class="action" onclick="Game.openPage('home')">Продолжить</button></div>
+        </div>
+      </section>
+
+      <section class="page" id="page-character"><div class="hero"><h1>♟ Персонаж</h1><p>Твой профиль и развитие.</p><div class="cards"><div class="card"><h3 id="charName"></h3><p class="muted" id="charInfo"></p><div class="bar"><i id="xpBar" style="width:0%"></i></div></div><div class="card"><h3>🎒 Инвентарь</h3><p id="invCount" class="muted"></p><div id="inventory"></div></div><div class="card"><h3>🏆 Достижения</h3><div id="achievements"></div></div></div></div></section>
+
+      <section class="page" id="page-jobs"><div class="hero"><h1>💼 Работа</h1><p>Работай честно или выбирай риск.</p><div class="jobGrid" id="jobsList"></div></div></section>
+      <section class="page" id="page-shop"><div class="hero"><h1>🛒 Магазин</h1><p>Персонажи, одежда, аксессуары, машины и улучшения.</p><div class="shopGrid" id="shopList"></div></div></section>
+      <section class="page" id="page-vehicles"><div class="hero"><h1>🏎 Машины</h1><p>Гараж и транспорт.</p><div class="vehicleGrid" id="vehicleList"></div></div></section>
+      <section class="page" id="page-business"><div class="hero"><h1>🏢 Бизнес</h1><p>Пассивный доход и улучшения.</p><div class="businessGrid" id="businessList"></div></div></section>
+      <section class="page" id="page-clans"><div class="hero"><h1>⚔ Кланы</h1><p>Выбери сторону и развивай клан.</p><div class="clanGrid" id="clanList"></div></div></section>
+      <section class="page" id="page-settings"><div class="hero"><h1>⚙ Настройки</h1><div class="cards"><div class="card"><h3>🔊 Звук</h3><p class="muted">Мини-сигналы интерфейса</p><button class="action" onclick="Game.toggleSound()">Переключить звук</button></div><div class="card"><h3>💾 Сохранение</h3><p class="muted">Состояние автоматически сохраняется.</p><button class="action" onclick="Game.save();Toast.show('Сохранено')">Сохранить сейчас</button></div><div class="card"><h3>🚪 Сессия</h3><button class="action" onclick="Game.logout()">Выйти из аккаунта</button></div></div></div></section>
+    </main>
+  </section>
+
+  <div id="adminPinModal" class="modal"><div class="modalBox" style="max-width:390px"><div class="modalHead"><h2>🔐 Скрытая панель</h2><button class="close" onclick="Admin.closePin()">×</button></div><p class="muted">Ctrl + Q открывает доступ к панели администратора.</p><input id="adminPin" class="input" type="password" placeholder="Введите PIN"><div id="adminPinError" class="error"></div><button class="primary" onclick="Admin.verify()">ВОЙТИ</button></div></div>
+
+  <div id="adminCommandModal" class="modal">
+    <div class="modalBox" style="max-width:700px">
+      <div class="modalHead">
+        <h2>⌘ ADMIN COMMAND CONSOLE</h2>
+        <button class="close" onclick="Admin.closeCommands()">×</button>
+      </div>
+      <p class="muted">Команды выполняются только после проверки прав текущего администратора.</p>
+      <input id="adminCommandInput" class="input" autocomplete="off"
+             placeholder="/ahelp">
+      <div id="adminCommandOutput" class="commandOutput"></div>
+      <button class="primary" onclick="Admin.runCommand()">ВЫПОЛНИТЬ</button>
+    </div>
+  </div>
+  <div id="adminModal" class="modal"><div class="modalBox"><div class="modalHead"><h2>CONTROL CENTER</h2><div style="display:flex;gap:8px"><button class="action" style="width:auto;margin:0;padding:0 12px" onclick="Admin.openCommands()">⌘ Команды</button><button class="close" onclick="Admin.close()">×</button></div></div><div class="adminStats" id="adminStats"></div><h3>Управление игроками</h3><div class="adminTools">
+    <div class="tool"><b>💰 Деньги</b><input id="admUser" placeholder="Ник игрока"><input id="admMoney" type="number" placeholder="Сумма"><button class="action" onclick="Admin.money()">Выдать деньги</button></div>
+    <div class="tool"><b>⭐ Уровень</b><input id="admLevelUser" placeholder="Ник игрока"><input id="admLevel" type="number" min="1" max="100" placeholder="Уровень"><button class="action" onclick="Admin.setLevel()">Установить уровень</button></div>
+    <div class="tool"><b>👑 Админка</b><input id="admAdminUser" placeholder="Ник игрока"><select id="admAdminLevel"><option value="0">Нет админки</option><option value="1">Support</option><option value="2">Moderator</option><option value="3">Admin</option><option value="4">Technical</option><option value="5">Owner</option></select><button class="action" onclick="Admin.admin()">Выдать админку</button></div>
+  <div class="adminTools">
+    <div class="tool"><b>🚫 Блокировка</b><input id="admBanUser" placeholder="Ник игрока"><input id="admBanMinutes" type="number" min="1" placeholder="Минуты"><button class="action" onclick="Admin.ban()">Заблокировать</button><button class="action" onclick="Admin.unban()">Разблокировать</button></div>
+  </div>
+  <h3>Игроки</h3><div style="overflow:auto"><table class="table"><thead><tr><th>Ник</th><th>Уровень</th><th>Деньги</th><th>Админ</th><th>Статус</th></tr></thead><tbody id="adminPlayers"></tbody></table></div><h3>📜 Журнал администратора</h3><pre id="adminLogs" class="commandOutput" style="max-height:220px;overflow:auto">Логов пока нет.</pre></div></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+'use strict';
+
+/* =========================
+   CORE / DATA / MIGRATIONS
+========================= */
+const DB_KEY='bandit_game_v2_db';
+const SESSION_KEY='bandit_game_v2_session';
+const DB_VERSION=3;
+const OWNER='masta', OWNER_PIN='123456';
+
+const Default={
+  version:DB_VERSION,users:{},logs:[],settings:{sound:true}
+};
+function clone(x){return JSON.parse(JSON.stringify(x))}
+function loadDB(){
+  try{
+    const raw=localStorage.getItem(DB_KEY);
+    if(!raw)return clone(Default);
+    const db=JSON.parse(raw);
+    db.users=db.users||{}; db.logs=db.logs||[]; db.settings=Object.assign({sound:true},db.settings||{});
+    db.version=DB_VERSION;
+    return db;
+  }catch(e){return clone(Default)}
+}
+function saveDB(db){localStorage.setItem(DB_KEY,JSON.stringify(db))}
+function currentName(){try{return sessionStorage.getItem(SESSION_KEY)||''}catch(e){return ''}}
+function setSession(name){sessionStorage.setItem(SESSION_KEY,name);localStorage.setItem('banditCurrent',name);localStorage.setItem('currentUser',name)}
+function clearSession(){sessionStorage.removeItem(SESSION_KEY);localStorage.removeItem('banditCurrent');localStorage.removeItem('currentUser')}
+function makeUser(name,pass,meta={}){
+ return {username:name,password:pass,age:Number(meta.age),gender:meta.gender,city:meta.city,style:meta.style,
+   money:0,level:1,xp:0,rep:0,inventory:[],vehicles:[],businesses:[],clan:null,missions:{rides:0,earn:0,buys:0},
+   achievements:[],adminLevel:0,createdAt:Date.now(),lastActive:Date.now(),suspicion:0,banUntil:0};
+}
+function bootDB(){
+ const db=loadDB();
+ if(!db.users[OWNER])db.users[OWNER]=makeUser(OWNER,OWNER_PIN,{age:18,gender:'male',city:'Bandit City',style:'classic'});
+ db.users[OWNER].adminLevel=5; db.users[OWNER].role='Owner';
+ saveDB(db);
+}
+bootDB();
+
+/* =========================
+   FX
+========================= */
+(function city(){
+ const c=document.getElementById('cityFX');
+ for(let i=0;i<28;i++){
+   const b=document.createElement('div');b.className='building';
+   b.style.left=(i*4-2)+'%';b.style.width=(3+Math.random()*4)+'%';b.style.height=(15+Math.random()*40)+'%';c.appendChild(b);
+   for(let w=0;w<3;w++){const x=document.createElement('i');x.className='window';x.style.left=(10+Math.random()*70)+'%';x.style.bottom=(10+Math.random()*70)+'%';b.appendChild(x)}
+ }
+ for(let i=0;i<70;i++){const r=document.createElement('i');r.className='rain';r.style.left=Math.random()*100+'%';r.style.animationDelay=(-Math.random()*2)+'s';r.style.opacity=.1+Math.random()*.25;c.appendChild(r)}
+})();
+
+/* =========================
+   AUTH — ONE SYSTEM ONLY
+========================= */
+
+/* =========================
+   SUPABASE CLOUD AUTH
+========================= */
+const SUPABASE_URL = 'https://duhxdoycglewlzxxmtqx.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_b2TlfCvq9OyQeLlvE4X1Ww_io-bkZqw';
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+function escapeHtml(value){
+  return String(value??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+function cloudEmailForUsername(name){
+  const n=String(name||'').trim().toLowerCase();
+  // Existing Owner accounts created manually in Supabase.
+  if(n==='masta') return 'masta@bandit-game.local';
+  if(n==='khasanov') return 'khasanov@bandit-game.local';
+  // New registrations use a deterministic internal email.
+  const hex=Array.from(n).map(c=>c.codePointAt(0).toString(16)).join('');
+  return 'bandit-'+hex+'@bandit-game.local';
+}
+
+const Cloud={
+  client:supabaseClient,
+  async currentSession(){
+    const {data,error}=await this.client.auth.getSession();
+    if(error) throw error;
+    return data.session;
+  },
+  async profile(userId){
+    const {data,error}=await this.client.from('profiles').select('*').eq('id',userId).maybeSingle();
+    if(error) throw error;
+    return data;
+  },
+  async loadProfile(userId){
+    const p=await this.profile(userId);
+    if(!p) return null;
+    return p;
+  },
+  async createProfile(userId, meta){
+    const row={
+      id:userId,
+      username:meta.username,
+      age:Number(meta.age),
+      gender:meta.gender,
+      city:meta.city,
+      style:meta.style,
+      money:0,
+      level:1,
+      xp:0,
+      reputation:0
+    };
+    const {data,error}=await this.client.from('profiles').insert(row).select('*').single();
+    if(error) throw error;
+    return data;
+  },
+  async saveProfile(u, userId){
+    if(!u || !userId) return;
+    const {error}=await this.client.from('profiles').update({
+      username:u.username,
+      age:Number(u.age)||null,
+      gender:u.gender||null,
+      city:u.city||null,
+      style:u.style||'street',
+      money:Math.max(0,Math.floor(Number(u.money)||0)),
+      level:Math.max(1,Math.floor(Number(u.level)||1)),
+      xp:Math.max(0,Math.floor(Number(u.xp)||0)),
+      reputation:Math.floor(Number(u.rep)||0),
+      updated_at:new Date().toISOString()
+    }).eq('id',userId);
+    if(error) throw error;
+  },
+  async signUp(name,password,meta){
+    const {data,error}=await this.client.auth.signUp({
+      email:cloudEmailForUsername(name),
+      password:password,
+      options:{data:{username:name}}
+    });
+    if(error) throw error;
+    if(!data.user) throw new Error('Supabase не вернул пользователя.');
+    // Confirm email is disabled in your project, so a session should be returned.
+    if(!data.session) throw new Error('Аккаунт создан, но сессия не выдана. Проверьте, что Confirm email выключен.');
+    try{
+      await this.createProfile(data.user.id,meta);
+    }catch(profileError){
+      // Do not hide the real database error.
+      throw profileError;
+    }
+    return {user:data.user,session:data.session};
+  },
+  async signIn(name,password){
+    const {data,error}=await this.client.auth.signInWithPassword({
+      email:cloudEmailForUsername(name),
+      password
+    });
+    if(error) throw error;
+    if(!data.session) throw new Error('Сессия не создана.');
+    return data;
+  },
+  async signOut(){
+    const {error}=await this.client.auth.signOut();
+    if(error) throw error;
+  }
+};
+
+const Auth={
+ gender:'male',style:'street',supabaseUserId:null,cloudReady:false,
+ async init(){
+  const age=document.getElementById('regAge');
+  if(age && age.options.length===1){
+    for(let i=14;i<=80;i++){const o=document.createElement('option');o.value=i;o.textContent=i+' лет';age.appendChild(o)}
+  }
+  document.querySelectorAll('[data-gender]').forEach(b=>b.onclick=()=>{
+    document.querySelectorAll('[data-gender]').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');this.gender=b.dataset.gender;
+  });
+  document.querySelectorAll('[data-style]').forEach(b=>b.onclick=()=>{
+    document.querySelectorAll('[data-style]').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');this.style=b.dataset.style;
+  });
+  document.getElementById('registerSwitch').onclick=()=>this.switch('register');
+  document.getElementById('loginSwitch').onclick=()=>this.switch('login');
+  document.getElementById('registerForm').onsubmit=e=>{e.preventDefault();this.register()};
+  document.getElementById('loginForm').onsubmit=e=>{e.preventDefault();this.login()};
+
+  try{
+    const session=await Cloud.currentSession();
+    if(session && session.user){
+      const p=await Cloud.loadProfile(session.user.id);
+      if(p){
+        this.supabaseUserId=session.user.id;
+        this.cloudReady=true;
+        this.hydrateLocalFromProfile(p);
+        setSession(p.username);
+        this.enterGame();
+        return;
+      }
+    }
+  }catch(e){
+    console.warn('Supabase session restore:',e);
+  }
+  this.showRegister();
+ },
+ hydrateLocalFromProfile(p){
+  const db=loadDB();
+  const existing=db.users[p.username]||makeUser(p.username,'',p);
+  existing.username=p.username;
+  existing.password='';
+  existing.age=p.age;
+  existing.gender=p.gender||'male';
+  existing.city=p.city||'';
+  existing.style=p.style||'street';
+  existing.money=Number(p.money||0);
+  existing.level=Number(p.level||1);
+  existing.xp=Number(p.xp||0);
+  existing.rep=Number(p.reputation||0);
+  existing.lastActive=Date.now();
+  db.users[p.username]=existing;
+  saveDB(db);
+ },
+ switch(mode){
+  const reg=mode==='register';
+  document.getElementById('registerSwitch').classList.toggle('active',reg);
+  document.getElementById('loginSwitch').classList.toggle('active',!reg);
+  document.getElementById('registerForm').classList.toggle('hidden',!reg);
+  document.getElementById('loginForm').classList.toggle('active',!reg);
+  document.getElementById('steps').classList.toggle('hidden',!reg);
+  document.getElementById('authTitle').textContent=reg?'РЕГИСТРАЦИЯ':'ВХОД';
+  document.getElementById('authSub').textContent=reg?'Создай свой аккаунт':'Вернись на улицы города';
+  document.getElementById('regError').textContent='';
+  document.getElementById('loginError').textContent='';
+ },
+ showRegister(){
+  clearSession();
+  this.switch('register');
+  document.getElementById('auth').classList.remove('hidden');
+  document.getElementById('game').classList.add('hidden');
+ },
+ async register(){
+  const name=document.getElementById('regName').value.trim();
+  const pass=document.getElementById('regPass').value;
+  const pass2=document.getElementById('regPass2').value;
+  const age=document.getElementById('regAge').value;
+  const city=document.getElementById('regCity').value.trim();
+  const err=document.getElementById('regError');
+  const btn=document.getElementById('registerBtn');
+  err.className='error';
+  if(!/^[A-Za-zА-Яа-яЁё0-9_]{3,20}$/.test(name)) return err.textContent='Никнейм: 3–20 символов, только буквы, цифры и _.';
+  if(pass.length<4) return err.textContent='Пароль должен содержать минимум 4 символа.';
+  if(pass!==pass2) return err.textContent='Пароли не совпадают.';
+  if(!age) return err.textContent='Выберите возраст.';
+  if(city.length<2) return err.textContent='Введите город.';
+  if(!document.getElementById('regRules').checked) return err.textContent='Подтвердите правила проекта.';
+  btn.disabled=true;btn.classList.add('loading');
+  try{
+    // Supabase Auth is now the authoritative account system.
+    const result=await Cloud.signUp(name,pass,{username:name,age,gender:this.gender,city,style:this.style});
+    this.supabaseUserId=result.user.id;
+    this.cloudReady=true;
+    const p=await Cloud.loadProfile(result.user.id);
+    if(p) this.hydrateLocalFromProfile(p);
+    setSession(name);
+    this.enterGame();
+    Toast.show('Аккаунт создан. Добро пожаловать, '+name+'!','success');
+  }catch(e){
+    console.error(e);
+    const msg=String(e?.message||e);
+    if(/already registered|already exists|duplicate/i.test(msg)) err.textContent='Этот ник уже занят.';
+    else if(/row-level security|permission denied/i.test(msg)) err.textContent='Ошибка RLS: проверь политики таблицы profiles.';
+    else err.textContent='Ошибка регистрации: '+msg;
+  }finally{
+    btn.disabled=false;btn.classList.remove('loading');
+  }
+ },
+ async login(){
+  const name=document.getElementById('loginName').value.trim();
+  const pass=document.getElementById('loginPass').value;
+  const err=document.getElementById('loginError');
+  try{
+    const result=await Cloud.signIn(name,pass);
+    this.supabaseUserId=result.user.id;
+    this.cloudReady=true;
+    const p=await Cloud.loadProfile(result.user.id);
+    if(!p) throw new Error('Профиль игрока не найден в таблице profiles.');
+    this.hydrateLocalFromProfile(p);
+    setSession(p.username);
+    this.enterGame();
+  }catch(e){
+    console.error(e);
+    const msg=String(e?.message||e);
+    if(/invalid login credentials/i.test(msg)) err.textContent='Неверный никнейм или пароль.';
+    else if(/profile/i.test(msg)) err.textContent=msg;
+    else err.textContent=/failed to fetch|networkerror|fetch/i.test(msg) ? 'Не удалось подключиться к Supabase. Открой игру через GitHub Pages (https://msfg28.github.io/...), а не через file://.' : 'Ошибка входа: '+msg;
+  }
+ },
+ enterGame(){
+  document.getElementById('auth').classList.add('hidden');
+  document.getElementById('game').classList.remove('hidden');
+  Game.init();
+ },
+ async logout(){
+  try{await Cloud.signOut()}catch(e){console.error(e)}
+  clearSession();
+  location.reload();
+ }
+};
+Auth.init();
+
+
+/* =========================
+   GAMEPLAY
+========================= */
+const Game={
+ page:'home',sound:true,jobBusy:false,
+ get user(){const db=loadDB();return db.users[currentName()]},
+ save(){
+  const db=loadDB(),u=this.user;if(!u)return;
+  u.lastActive=Date.now();db.users[u.username]=u;saveDB(db);
+  if(window.Auth && Auth.cloudReady && Auth.supabaseUserId){
+    Cloud.saveProfile(u,Auth.supabaseUserId).catch(e=>console.warn('Cloud save:',e));
+  }
+},
+ addMoney(n,reason=''){const db=loadDB(),u=db.users[currentName()];if(!u)return;u.money=Math.max(0,Math.floor(u.money+n));u.missions.earn+=(n>0?n:0);db.logs.unshift({at:Date.now(),type:'money',user:u.username,amount:n,reason});saveDB(db);this.checkAchievements();this.render()},
+ addXP(n){const db=loadDB(),u=db.users[currentName()];u.xp+=Math.max(0,n);while(u.xp>=u.level*100){u.xp-=u.level*100;u.level++;Toast.show('Новый уровень: '+u.level,'success')}db.users[u.username]=u;saveDB(db);this.checkAchievements();this.render()},
+ openPage(p){this.page=p;document.querySelectorAll('.navBtn').forEach(b=>b.classList.toggle('active',b.dataset.page===p));document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id==='page-'+p));this.render()},
+ init(){this.render();this.openPage('home')},
+ render(){
+  const u=this.user;if(!u)return;
+  document.getElementById('hudMoney').textContent=u.money.toLocaleString('ru-RU')+' ₽';
+  document.getElementById('hudLevel').textContent=u.level;
+  document.getElementById('hudXP').textContent=u.xp+' / '+(u.level*100);
+  document.getElementById('hudRep').textContent=u.rep;
+  document.getElementById('heroName').textContent=u.username;
+  document.getElementById('charName').textContent=u.username+' · '+u.style;
+  document.getElementById('charInfo').textContent=u.age+' лет · '+(u.gender==='male'?'Мужской':'Женский')+' · '+u.city;
+  document.getElementById('xpBar').style.width=Math.min(100,u.xp/(u.level*100)*100)+'%';
+  document.getElementById('invCount').textContent='Предметов: '+u.inventory.length;
+  document.getElementById('inventory').innerHTML=u.inventory.length?u.inventory.map(x=>'<span class="tag">'+x+'</span>').join(''):'<span class="muted">Пока пусто</span>';
+  document.getElementById('achievements').innerHTML=u.achievements.length?u.achievements.map(x=>'<div class="green">✓ '+x+'</div>').join(''):'<span class="muted">Выполняй задания</span>';
+  document.getElementById('homeMission').innerHTML='<div class="card" style="margin-top:15px"><b>🎯 Миссия: заработай 1 000 ₽</b><div class="bar" style="margin-top:10px"><i style="width:'+Math.min(100,u.missions.earn/1000*100)+'%"></i></div><p class="muted">Прогресс: '+Math.floor(u.missions.earn)+' / 1000 ₽</p></div>';
+  document.getElementById('missionCard').textContent='Заработано: '+Math.floor(u.missions.earn)+' ₽ · поездок: '+u.missions.rides;
+  this.renderJobs();this.renderShop();this.renderVehicles();this.renderBusiness();this.renderClans();
+ },
+ renderJobs(){
+  const jobs=[
+   ['🚕','Такси','10 секунд на поездку','120–420 ₽','taxi'],
+   ['📦','Курьер','Доставь посылку','90–300 ₽','courier'],
+   ['🔧','Механик','Почини машину клиента','160–500 ₽','mechanic']
+  ];
+  document.getElementById('jobsList').innerHTML=jobs.map(j=>`<div class="card"><div style="font-size:30px">${j[0]}</div><h3>${j[1]}</h3><p class="muted">${j[2]}</p><span class="tag">${j[3]}</span><button class="action" onclick="Game.startJob('${j[4]}')">Начать работу</button></div>`).join('');
+ },
+ startJob(type){
+  if(this.jobBusy)return Toast.show('Сначала закончи текущую работу.');
+  this.jobBusy=true;let left=10;Toast.show('Работа началась. 10 секунд...');
+  const timer=setInterval(()=>{left--;Toast.show('Осталось '+left+' сек.');if(left<=0){clearInterval(timer);this.jobBusy=false;const reward=120+Math.floor(Math.random()*381);const db=loadDB(),u=db.users[currentName()];u.missions.rides++;db.users[u.username]=u;saveDB(db);this.addMoney(reward,type);this.addXP(18);Toast.show('Работа завершена: +'+reward+' ₽','success')}},1000);
+ },
+ renderShop(){
+  const items=[['🧢','Уличная кепка',250,'Кепка'],['🧥','Кожаная куртка',700,'Куртка'],['⌚','Премиум часы',1200,'Часы']];
+  document.getElementById('shopList').innerHTML=items.map(x=>`<div class="card"><div style="font-size:32px">${x[0]}</div><h3>${x[1]}</h3><p class="muted">Редкость: Rare</p><b class="money">${x[2].toLocaleString()} ₽</b><button class="action" onclick="Game.buy('${x[3]}',${x[2]})">Купить</button></div>`).join('');
+ },
+ buy(item,cost){const db=loadDB(),u=db.users[currentName()];if(u.money<cost)return Toast.show('Недостаточно денег.');u.money-=cost;u.inventory.push(item);u.missions.buys++;db.logs.unshift({at:Date.now(),type:'buy',user:u.username,item,cost});db.users[u.username]=u;saveDB(db);this.addXP(8);Toast.show('Куплено: '+item,'success')},
+ renderVehicles(){
+  const cars=[['🚗','Street Runner',2500,65,55,60],['🏎️','Red Phantom',7000,88,75,70],['🚘','Night King',15000,98,92,90]];
+  document.getElementById('vehicleList').innerHTML=cars.map(x=>`<div class="card"><div style="font-size:34px">${x[0]}</div><h3>${x[1]}</h3><p class="muted">Скорость ${x[3]} · Разгон ${x[4]} · Управление ${x[5]}</p><b class="money">${x[2].toLocaleString()} ₽</b><button class="action" onclick="Game.buyVehicle('${x[1]}',${x[2]})">Купить</button></div>`).join('');
+ },
+ buyVehicle(name,cost){const db=loadDB(),u=db.users[currentName()];if(u.money<cost)return Toast.show('Недостаточно денег.');u.money-=cost;u.vehicles.push({name,level:1});db.users[u.username]=u;saveDB(db);this.addXP(25);Toast.show('Машина добавлена в гараж','success')},
+ renderBusiness(){
+  const b=[['🏪','Ларёк',5000,250],['⛽','АЗС',18000,900],['🏢','Офис',50000,2800]];
+  document.getElementById('businessList').innerHTML=b.map(x=>`<div class="card"><h3>${x[0]} ${x[1]}</h3><p class="muted">Цена ${x[2].toLocaleString()} ₽ · доход ${x[3]} ₽/мин</p><button class="action" onclick="Game.buyBusiness('${x[1]}',${x[2]},${x[3]})">Купить бизнес</button></div>`).join('');
+ },
+ buyBusiness(name,cost,income){const db=loadDB(),u=db.users[currentName()];if(u.money<cost)return Toast.show('Недостаточно денег.');u.money-=cost;u.businesses.push({name,income,level:1,last:Date.now()});db.users[u.username]=u;saveDB(db);Toast.show('Бизнес приобретён','success');this.render()},
+ renderClans(){
+  const clans=[['🇮🇹','Italian Mafia','Итальянская мафия'],['🇯🇵','Japanese Yakuza','Японская якудза'],['🏙️','Street Kings','Городская банда']];
+  document.getElementById('clanList').innerHTML=clans.map(x=>`<div class="card"><div style="font-size:30px">${x[0]}</div><h3>${x[1]}</h3><p class="muted">${x[2]} · максимум 10 участников</p><button class="action" onclick="Game.joinClan('${x[1]}')">Вступить</button></div>`).join('');
+ },
+ joinClan(name){const db=loadDB(),u=db.users[currentName()];u.clan=name;db.users[u.username]=u;saveDB(db);Toast.show('Ты вступил в '+name,'success');this.render()},
+ checkAchievements(){const db=loadDB(),u=db.users[currentName()];if(!u)return;if(u.money>=1000&&!u.achievements.includes('Первая тысяча'))u.achievements.push('Первая тысяча');if(u.missions.rides>=5&&!u.achievements.includes('Рабочая лошадка'))u.achievements.push('Рабочая лошадка');db.users[u.username]=u;saveDB(db)},
+ toggleSound(){const db=loadDB();db.settings.sound=!db.settings.sound;saveDB(db);Toast.show('Звук: '+(db.settings.sound?'вкл':'выкл'))}
+};
+document.querySelectorAll('.navBtn').forEach(b=>b.onclick=()=>Game.openPage(b.dataset.page));
+
+/* =========================
+   ADMIN
+========================= */
+const Admin={
+ level(){const u=Game.user;return u?Number(u.adminLevel)||0:0},
+ openPin(){if(this.level()<1)return;document.getElementById('adminPinModal').classList.add('open');document.getElementById('adminPin').value='';document.getElementById('adminPinError').textContent='';setTimeout(()=>document.getElementById('adminPin').focus(),50)},
+ closePin(){document.getElementById('adminPinModal').classList.remove('open')},
+ verify(){if(document.getElementById('adminPin').value!==OWNER_PIN)return document.getElementById('adminPinError').textContent='Неверный PIN-код';this.closePin();this.open()},
+ open(){document.getElementById('adminModal').classList.add('open');this.render()},
+ close(){document.getElementById('adminModal').classList.remove('open')},
+ render(){const db=loadDB(),users=Object.values(db.users);document.getElementById('adminStats').innerHTML=[['👥','Игроки',users.length],['💰','Всего денег',users.reduce((a,u)=>a+Number(u.money||0),0).toLocaleString()+' ₽'],['🟢','Онлайн',users.filter(u=>u.lastActive>Date.now()-300000).length],['👑','Админы',users.filter(u=>u.adminLevel>0).length],['⛔','Баны',users.filter(u=>u.banUntil>Date.now()).length]].map(x=>`<div class="stat"><small>${x[0]} ${x[1]}</small><b>${x[2]}</b></div>`).join('');document.getElementById('adminPlayers').innerHTML=users.map(u=>`<tr><td>${u.username}</td><td>${u.level}</td><td>${Number(u.money).toLocaleString()} ₽</td><td>${u.adminLevel||0}</td><td class="${u.lastActive>Date.now()-300000?'green':'muted'}">${u.lastActive>Date.now()-300000?'ONLINE':'OFFLINE'}</td></tr>`).join('')},
+ money(){const target=document.getElementById('admUser').value.trim(),n=Number(document.getElementById('admMoney').value),db=loadDB();if(this.level()<3)return Toast.show('Недостаточно прав.');if(!db.users[target])return Toast.show('Игрок не найден.');db.users[target].money=Math.max(0,db.users[target].money+n);db.logs.unshift({at:Date.now(),type:'admin_money',by:currentName(),user:target,amount:n});saveDB(db);this.render();Toast.show('Баланс изменён','success')},
+ level(){const me=Game.user;return Number(me?.adminLevel)||0},
+ setLevel(){},
+ admin(){const target=document.getElementById('admAdminUser').value.trim(),level=Number(document.getElementById('admAdminLevel').value),db=loadDB();if(this.level()<5)return Toast.show('Только Owner может управлять админкой.');if(!db.users[target])return Toast.show('Игрок не найден.');db.users[target].adminLevel=level;db.users[target].role=level===5?'Owner':level===4?'Technical':level===3?'Admin':level===2?'Moderator':level===1?'Support':'Player';saveDB(db);this.render();Toast.show('Права изменены','success')}
+};
+Admin.level=Admin.level.bind(Admin);
+Admin.money=Admin.money.bind(Admin);
+Admin.admin=Admin.admin.bind(Admin);
+
+Admin.level= function(){const u=Game.user;return Number(u?.adminLevel)||0};
+Admin.level=Admin.level.bind(Admin);
+Admin.setLevel=function(){const target=document.getElementById('admLevelUser').value.trim(),level=Math.max(1,Math.min(100,Number(document.getElementById('admLevel').value))),db=loadDB();if(this.level()<5)return Toast.show('Только Owner может менять уровень.');if(!db.users[target])return Toast.show('Игрок не найден.');db.users[target].level=level;db.users[target].xp=0;saveDB(db);this.render();Toast.show('Уровень установлен','success')};
+Admin.levelChange=Admin.setLevel.bind(Admin);
+window.Admin=Admin;
+
+document.addEventListener('keydown',e=>{
+ if(e.ctrlKey&&!e.shiftKey&&e.key.toLowerCase()==='q'){e.preventDefault();e.stopPropagation();if(Admin.level()>=1){if(document.getElementById('adminModal').classList.contains('open'))Admin.close();else if(document.getElementById('adminPinModal').classList.contains('open'))Admin.closePin();else Admin.openPin()}}
+});
+document.getElementById('adminPin').addEventListener('keydown',e=>{if(e.key==='Enter')Admin.verify()});
+
+/* =========================
+   TOAST / AUTOSAVE / SAFETY
+========================= */
+const Toast={show(msg,type='info'){const t=document.createElement('div');t.className='toast '+(type==='success'?'success':'');t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2600)}};
+setInterval(()=>{if(currentName())Game.save()},15000);
+window.addEventListener('beforeunload',()=>{if(currentName())Game.save()});
+window.Game=Game;
+window.Auth=Auth;
+
+/* =========================
+   ADMIN COMMAND CONSOLE
+========================= */
+Admin.openCommands=function(){
+  if(this.level()<1)return Toast.show('Недостаточно прав.');
+  document.getElementById('adminCommandModal').classList.add('open');
+  document.getElementById('adminCommandInput').value='';
+  document.getElementById('adminCommandOutput').textContent='Введите /ahelp для списка команд.';
+  setTimeout(()=>document.getElementById('adminCommandInput').focus(),50);
+};
+Admin.closeCommands=function(){document.getElementById('adminCommandModal').classList.remove('open')};
+Admin.runCommand=function(){
+  const raw=document.getElementById('adminCommandInput').value.trim();
+  const out=document.getElementById('adminCommandOutput');
+  if(!raw){out.textContent='Укажите команду. Используйте /ahelp';return}
+  const a=raw.split(/\s+/), cmd=a[0].toLowerCase(), db=loadDB(), me=Game.user;
+  const lvl=this.level();
+  const help=[
+    '/ahelp — список команд',
+    '/players — список игроков',
+    '/stats — статистика сервера',
+    '/givecash <ник> <сумма> — выдать/снять деньги (Admin+)',
+    '/setlevel <ник> <1-100> — установить уровень (Admin+)',
+    '/setadmin <ник> <0-5> — права (только Owner)',
+    '/ban <ник> [минуты] — блокировка (Admin+)',
+    '/unban <ник> — снять блокировку (Admin+)',
+    '/logs — последние действия (Technical+)',
+    '/close — закрыть консоль'
+  ];
+  const exists=n=>!!db.users[n];
+  if(cmd==='/ahelp'){out.textContent=help.join('\n');return}
+  if(cmd==='/close'){this.closeCommands();return}
+  if(cmd==='/players'){
+    out.textContent=Object.values(db.users).map(u=>`${u.username} | LVL ${u.level} | ${Number(u.money).toLocaleString('ru-RU')} ₽ | ADM ${u.adminLevel||0}`).join('\n')||'Игроков нет.';
+    return;
+  }
+  if(cmd==='/stats'){
+    const users=Object.values(db.users);
+    out.textContent=[
+      `Игроков: ${users.length}`,
+      `Онлайн: ${users.filter(u=>u.lastActive>Date.now()-300000).length}`,
+      `Всего денег: ${users.reduce((s,u)=>s+Number(u.money||0),0).toLocaleString('ru-RU')} ₽`,
+      `Администраторов: ${users.filter(u=>Number(u.adminLevel)>0).length}`,
+      `Заблокировано: ${users.filter(u=>Number(u.banUntil)>Date.now()).length}`
+    ].join('\n');
+    return;
+  }
+  if(cmd==='/logs'){
+    if(lvl<4){out.textContent='Доступно только Technical/Owner.';return}
+    out.textContent=(db.logs||[]).slice(0,25).map(x=>`${new Date(x.at).toLocaleString('ru-RU')} | ${x.type||'event'} | ${x.user||'-'}`).join('\n')||'Логи пусты.';
+    return;
+  }
+  if(cmd==='/givecash'){
+    if(lvl<3){out.textContent='Нужен Admin (3) или выше.';return}
+    const n=a[1], amount=Number(a[2]);
+    if(!n){out.textContent='Укажите ник игрока.';return}
+    if(!exists(n)){out.textContent='Игрок не найден.';return}
+    if(!Number.isFinite(amount)){out.textContent='Укажите корректную сумму.';return}
+    db.users[n].money=Math.max(0,Math.floor(Number(db.users[n].money||0)+amount));
+    db.logs.unshift({at:Date.now(),type:'command_money',by:me.username,user:n,amount});
+    saveDB(db); this.render(); out.textContent=`Готово: ${n} → ${amount>=0?'+':''}${amount.toLocaleString('ru-RU')} ₽`; return;
+  }
+  if(cmd==='/setlevel'){
+    if(lvl<3){out.textContent='Нужен Admin (3) или выше.';return}
+    const n=a[1], value=Number(a[2]);
+    if(!n){out.textContent='Укажите ник игрока.';return}
+    if(!exists(n)){out.textContent='Игрок не найден.';return}
+    if(!Number.isInteger(value)||value<1||value>100){out.textContent='Уровень: 1–100.';return}
+    db.users[n].level=value;db.users[n].xp=0;db.logs.unshift({at:Date.now(),type:'command_level',by:me.username,user:n,level:value});
+    saveDB(db);this.render();out.textContent=`Готово: ${n} теперь уровень ${value}.`;return;
+  }
+  if(cmd==='/setadmin'){
+    if(lvl<5){out.textContent='Только Owner (5).';return}
+    const n=a[1], value=Number(a[2]);
+    if(!n){out.textContent='Укажите ник игрока.';return}
+    if(!exists(n)){out.textContent='Игрок не найден.';return}
+    if(!Number.isInteger(value)||value<0||value>5){out.textContent='Админ-уровень: 0–5.';return}
+    const roles=['Player','Support','Moderator','Admin','Technical','Owner'];
+    db.users[n].adminLevel=value;db.users[n].role=roles[value];
+    db.logs.unshift({at:Date.now(),type:'command_admin',by:me.username,user:n,level:value});
+    saveDB(db);this.render();out.textContent=`Готово: ${n} → ${roles[value]} (${value}).`;return;
+  }
+  if(cmd==='/ban'){
+    if(lvl<3){out.textContent='Нужен Admin (3) или выше.';return}
+    const n=a[1], mins=a[2]===undefined?60:Number(a[2]);
+    if(!n){out.textContent='Укажите ник игрока.';return}
+    if(!exists(n)){out.textContent='Игрок не найден.';return}
+    if(!Number.isFinite(mins)||mins<=0){out.textContent='Укажите срок в минутах.';return}
+    db.users[n].banUntil=Date.now()+Math.floor(mins*60000);
+    db.logs.unshift({at:Date.now(),type:'command_ban',by:me.username,user:n,minutes:mins});
+    saveDB(db);this.render();out.textContent=`Игрок ${n} заблокирован на ${mins} мин.`;return;
+  }
+  if(cmd==='/unban'){
+    if(lvl<3){out.textContent='Нужен Admin (3) или выше.';return}
+    const n=a[1];
+    if(!n){out.textContent='Укажите ник игрока.';return}
+    if(!exists(n)){out.textContent='Игрок не найден.';return}
+    db.users[n].banUntil=0;db.logs.unshift({at:Date.now(),type:'command_unban',by:me.username,user:n});
+    saveDB(db);this.render();out.textContent=`Блокировка ${n} снята.`;return;
+  }
+  out.textContent='Неизвестная команда. Используйте /ahelp.';
+};
+document.getElementById('adminCommandInput').addEventListener('keydown',e=>{
+  if(e.key==='Enter'){e.preventDefault();Admin.runCommand()}
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    Admin.closeCommands();
+    if(document.getElementById('adminModal').classList.contains('open'))Admin.close();
+    if(document.getElementById('adminPinModal').classList.contains('open'))Admin.closePin();
+  }
+});
+
+/* ===== REGISTRATION FINAL FIX v2 ===== */
+(function(){
+  const get = id => document.getElementById(id);
+  const value = id => {
+    const e=get(id);
+    return e ? String(e.value ?? '').trim() : '';
+  };
+
+  // Keep the visual registration form exactly as designed, but connect it
+  // to its actual field IDs.
+  window.Auth = window.Auth || {};
+  Auth.register = function(){
+    const err=get('regError') || get('registerError');
+    const show = msg => {
+      if(err){
+        err.className='error';
+        err.textContent=msg;
+      }
+      if(typeof Toast!=='undefined' && Toast.show) Toast.show(msg);
+    };
+
+    const name=value('regName');
+    const pass=value('regPass');
+    const pass2=value('regPass2');
+    const age=value('regAge');
+    const city=value('regCity');
+
+    // The form itself already stores the selected values in Auth.gender/style.
+    const gender=Auth.gender || 'male';
+    const style=Auth.style || 'street';
+
+    if(!name)
+      return show('Введите никнейм.');
+    if(name.length<3 || name.length>20)
+      return show('Никнейм должен содержать от 3 до 20 символов.');
+
+    // Allow normal Russian/English usernames, digits, underscore and hyphen.
+    // Spaces are intentionally not allowed in usernames.
+    if(!/^[A-Za-zА-Яа-яЁё0-9_-]+$/.test(name))
+      return show('Никнейм содержит недопустимые символы. Используйте буквы, цифры, _ или -.');
+
+    const db=typeof loadDB==='function' ? loadDB() : {users:{},logs:[]};
+    db.users=db.users||{};
+    db.logs=db.logs||{};
+
+    // Username comparison is case-insensitive, so Masta and masta cannot
+    // accidentally create two different accounts.
+    const existing=Object.keys(db.users).find(k=>k.toLowerCase()===name.toLowerCase());
+    if(existing)
+      return show('Этот никнейм уже занят.');
+
+    if(pass.length<4)
+      return show('Пароль должен содержать минимум 4 символа.');
+    if(pass!==pass2)
+      return show('Пароли не совпадают.');
+
+    const ageNum=Number(age);
+    if(!Number.isInteger(ageNum) || ageNum<14 || ageNum>80)
+      return show('Выберите возраст от 14 до 80 лет.');
+
+    if(city.length<2)
+      return show('Введите город.');
+
+    const rules=get('regRules');
+    if(!rules || !rules.checked)
+      return show('Поставьте галочку согласия с правилами проекта.');
+
+    if(typeof makeUser==='function'){
+      const u=makeUser(name,pass,{
+        age:ageNum,
+        gender,
+        city,
+        style
+      });
+
+      db.users[name]=u;
+      db.logs=Array.isArray(db.logs) ? db.logs : [];
+      db.logs.unshift({at:Date.now(),type:'register',user:name});
+
+      if(typeof saveDB==='function') saveDB(db);
+      if(typeof setSession==='function') setSession(name);
+
+      if(typeof Auth.enterGame==='function'){
+        Auth.enterGame();
+      }else{
+        const auth=get('auth'), game=get('game');
+        if(auth) auth.classList.add('hidden');
+        if(game) game.classList.remove('hidden');
+        if(typeof Game!=='undefined' && Game.init) Game.init();
+      }
+
+      if(typeof Toast!=='undefined' && Toast.show)
+        Toast.show('Аккаунт создан. Добро пожаловать, '+name+'!','success');
+      return;
+    }
+
+    show('Ошибка системы регистрации: не найден модуль создания аккаунта.');
+  };
+
+  // Enter submits registration while the registration form is active.
+  document.addEventListener('keydown',function(e){
+    const auth=get('auth');
+    if(!auth || auth.classList.contains('hidden')) return;
+    if(e.key==='Enter'){
+      const active=document.activeElement;
+      if(active && active.closest && active.closest('#registerForm') &&
+         active.type!=='checkbox'){
+        e.preventDefault();
+        Auth.register();
+      }
+    }
+  });
+})();
+
+</script>
+
+<script id="final-registration-button-js">
+document.addEventListener('DOMContentLoaded', function(){
+  const btn=document.getElementById('registerBtn');
+  if(btn){
+    btn.addEventListener('click', function(e){
+      e.preventDefault();
+      if(window.Auth && typeof Auth.register==='function'){
+        Auth.register();
+      }else{
+        const err=document.getElementById('regError');
+        if(err) err.textContent='Система регистрации ещё загружается. Нажмите ещё раз.';
+      }
+    });
+  }
+});
+</script>
+
+
+<style id="settings-final-fix">
+#settingsModal .settingRow,#settingsModal .settingsRow{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:12px 0;padding:12px;border:1px solid var(--line);border-radius:12px}
+#settingsModal button{cursor:pointer}
+.settingsToast{position:fixed;right:22px;bottom:22px;z-index:99999;padding:12px 16px;border:1px solid var(--line);border-radius:12px;background:#10151d;color:#fff;box-shadow:0 12px 35px rgba(0,0,0,.35)}
+</style>
+<script id="settings-final-fix-js">
+(function(){
+  const $=id=>document.getElementById(id);
+  const key='banditSettings';
+  const defaults={music:true,sfx:true,volume:70};
+  let settings=Object.assign({},defaults,JSON.parse(localStorage.getItem(key)||'{}'));
+
+  function save(){localStorage.setItem(key,JSON.stringify(settings));}
+  function toast(t){
+    let x=document.querySelector('.settingsToast');
+    if(!x){x=document.createElement('div');x.className='settingsToast';document.body.appendChild(x)}
+    x.textContent=t; x.style.display='block';
+    clearTimeout(x._t); x._t=setTimeout(()=>x.style.display='none',1800);
+  }
+  function find(ids){for(const id of ids){const e=$(id);if(e)return e}return null}
+
+  function setAudio(){
+    const audio=window.__banditAudio || document.querySelector('audio');
+    if(audio){
+      audio.volume=Math.max(0,Math.min(1,settings.volume/100));
+      audio.muted=!settings.music;
+    }
+    document.querySelectorAll('audio').forEach(a=>{
+      a.volume=Math.max(0,Math.min(1,settings.volume/100));
+      a.muted=!settings.music;
+    });
+  }
+
+  window.BanditSettings={
+    open(){
+      const m=find(['settingsModal','settings','settingsPanel']);
+      if(m){
+        m.classList.add('open');
+        m.style.display='flex';
+      }else toast('Окно настроек не найдено.');
+      this.render();
+    },
+    close(){
+      const m=find(['settingsModal','settings','settingsPanel']);
+      if(m){m.classList.remove('open');m.style.display='none'}
+    },
+    toggleMusic(){
+      settings.music=!settings.music; save(); setAudio();
+      toast(settings.music?'Музыка включена':'Музыка выключена'); this.render();
+    },
+    toggleSfx(){
+      settings.sfx=!settings.sfx; save();
+      toast(settings.sfx?'Звуки включены':'Звуки выключены'); this.render();
+    },
+    setVolume(v){
+      settings.volume=Math.max(0,Math.min(100,Number(v)||0));save();setAudio();this.render();
+    },
+    logout(){
+      if(!confirm('Выйти из аккаунта?')) return;
+      try{localStorage.removeItem('banditSession')}catch(e){}
+      if(window.Game && Game.user) Game.user=null;
+      const game=$('game'),auth=$('auth');
+      if(game){game.classList.add('hidden');game.style.display='none'}
+      if(auth){auth.classList.remove('hidden');auth.style.display='flex'}
+      this.close();
+      toast('Вы вышли из аккаунта.');
+    },
+    render(){
+      const music=find(['musicToggle','settingsMusic','musicSwitch']);
+      const sfx=find(['sfxToggle','settingsSfx','sfxSwitch']);
+      const vol=find(['volumeSlider','settingsVolume','masterVolume']);
+      if(music){
+        if('checked' in music) music.checked=settings.music;
+        music.textContent= settings.music?'ВКЛ':'ВЫКЛ';
+      }
+      if(sfx){
+        if('checked' in sfx) sfx.checked=settings.sfx;
+        sfx.textContent= settings.sfx?'ВКЛ':'ВЫКЛ';
+      }
+      if(vol && 'value' in vol) vol.value=settings.volume;
+    }
+  };
+
+  // Make existing settings buttons functional by matching their text.
+  document.addEventListener('click',function(e){
+    const b=e.target.closest('button');
+    if(!b)return;
+    const t=(b.textContent||'').trim().toLowerCase();
+
+    if(t.includes('настрой') || t.includes('settings')){
+      e.preventDefault(); BanditSettings.open(); return;
+    }
+    if(t==='выйти' || t.includes('выйти из') || t.includes('logout')){
+      e.preventDefault(); BanditSettings.logout(); return;
+    }
+    if(t.includes('музык')){
+      e.preventDefault(); BanditSettings.toggleMusic(); return;
+    }
+    if(t.includes('звук') || t.includes('эффект')){
+      e.preventDefault(); BanditSettings.toggleSfx(); return;
+    }
+    if(t.includes('закрыть') && (b.closest('#settingsModal')||b.closest('#settings'))){
+      e.preventDefault();BanditSettings.close();return;
+    }
+  },true);
+
+  document.addEventListener('input',function(e){
+    if(['volumeSlider','settingsVolume','masterVolume'].includes(e.target.id))
+      BanditSettings.setVolume(e.target.value);
+  });
+
+  document.addEventListener('DOMContentLoaded',function(){
+    setAudio();BanditSettings.render();
+  });
+})();
+</script>
+
+
+<div id="settingsModal" class="modal" style="display:none">
+  <div class="modalBox" style="max-width:520px">
+    <div class="modalHead">
+      <h2>⚙ НАСТРОЙКИ</h2>
+      <button class="close" onclick="BanditSettings.close()">×</button>
+    </div>
+    <div class="settingRow"><span>🎵 Музыка</span><button id="musicToggle" class="action" onclick="BanditSettings.toggleMusic()">ВКЛ</button></div>
+    <div class="settingRow"><span>🔊 Эффекты</span><button id="sfxToggle" class="action" onclick="BanditSettings.toggleSfx()">ВКЛ</button></div>
+    <div class="settingRow"><span>Громкость</span><input id="volumeSlider" type="range" min="0" max="100" value="70"></div>
+    <button class="danger" onclick="BanditSettings.logout()">ВЫЙТИ ИЗ АККАУНТА</button>
+  </div>
+</div>
+
+
+<script id="supabase-cloud-sync">
+setInterval(function(){
+  try{
+    if(window.Auth && Auth.cloudReady && Auth.supabaseUserId && window.Game && Game.user){
+      Cloud.saveProfile(Game.user, Auth.supabaseUserId).catch(function(e){console.warn('Supabase autosave:',e)});
+    }
+  }catch(e){}
+}, 12000);
+</script>
+
+
+<script id="supabase-settings-logout">
+(function(){
+  const oldLogout = window.BanditSettings && window.BanditSettings.logout;
+  if(window.BanditSettings){
+    window.BanditSettings.logout = async function(){
+      if(!confirm('Выйти из аккаунта?')) return;
+      try{
+        if(window.Auth && typeof Auth.logout==='function') await Auth.logout();
+        else if(oldLogout) await oldLogout();
+      }catch(e){
+        console.error(e);
+        try{clearSession();location.reload()}catch(_){}
+      }
+    };
+  }
+})();
+</script>
+
+
+<script id="masta-owner-final-fix">
+(function(){
+  const OWNER_NAME='masta';
+  const OWNER_PASSWORD='123456';
+  const OWNER_LEVEL=5;
+  const OWNER_ROLE='owner';
+
+  window.MASTA_OWNER={
+    username:OWNER_NAME,
+    password:OWNER_PASSWORD,
+    level:OWNER_LEVEL,
+    role:OWNER_ROLE
+  };
+
+  // Local marker is only used to make the UI know this is the built-in owner.
+  // Supabase Auth remains the actual authentication backend.
+  window.isMastaOwner=function(username){
+    return String(username||'').toLowerCase()===OWNER_NAME;
+  };
+
+  // Override cloud username email mapping so masta always maps to one stable Auth identity.
+  if(typeof window.cloudEmailForUsername==='function'){
+    const original=window.cloudEmailForUsername;
+    window.cloudEmailForUsername=function(name){
+      if(String(name||'').toLowerCase()===OWNER_NAME){
+        return 'masta@bandit-game.local';
+      }
+      return original(name);
+    };
+  }
+
+  // After profile load, force owner metadata in the client UI.
+  const applyOwner=function(){
+    try{
+      if(window.Game && Game.user && String(Game.user.username||'').toLowerCase()===OWNER_NAME){
+        Game.user.adminLevel=OWNER_LEVEL;
+        Game.user.adminRole=OWNER_ROLE;
+        Game.user.isAdmin=true;
+        Game.user.isOwner=true;
+        Game.user.password='';
+      }
+    }catch(e){}
+  };
+
+  document.addEventListener('DOMContentLoaded',applyOwner);
+  setInterval(applyOwner,1000);
+})();
+</script>
+
+
+<script>
+/* ===== BANDIT GAME — SUPABASE ADMIN BRIDGE v2 ===== */
+(function(){
+  const ROLE_BY_LEVEL={1:'support',2:'moderator',3:'admin',4:'technical',5:'owner'};
+
+  function client(){
+    return window.supabaseClient || window.Cloud?.client || null;
+  }
+
+  function authUser(){
+    return window.Auth?.supabaseUserId ? {id:window.Auth.supabaseUserId} : null;
+  }
+
+  async function rpc(name,args){
+    const c=client();
+    if(!c) throw new Error('Supabase client не найден.');
+    const {data,error}=await c.rpc(name,args||{});
+    if(error) throw error;
+    return data;
+  }
+
+  async function getLevel(){
+    if(!authUser()) return 0;
+    return Number(await rpc('get_my_admin_level')||0);
+  }
+
+  async function getPlayers(){
+    const data=await rpc('admin_players');
+    return Array.isArray(data)?data:[];
+  }
+
+  async function requireLevel(min){
+    const lvl=await getLevel();
+    Admin._supabaseLevel=lvl;
+    if(window.Game?.user){
+      Game.user.adminLevel=lvl;
+      Game.user.isAdmin=lvl>0;
+      Game.user.adminRole=ROLE_BY_LEVEL[lvl]||'player';
+      Game.user.role=lvl>=5?'Owner':lvl>=4?'Technical':lvl>=3?'Admin':lvl>=2?'Moderator':lvl>=1?'Support':'Player';
+    }
+    if(lvl<min) throw new Error('Недостаточно прав.');
+    return lvl;
+  }
+
+  const Admin=window.Admin;
+  if(!Admin) return;
+
+  Admin._supabaseLevel=0;
+
+  Admin.level=function(){
+    return Number(this._supabaseLevel||0);
+  };
+
+  Admin.refreshRole=async function(){
+    try{return await requireLevel(0)}
+    catch(e){this._supabaseLevel=0;return 0}
+  };
+
+  Admin.openPin=async function(){
+    try{
+      const lvl=await requireLevel(1);
+      const modal=document.getElementById('adminPinModal');
+      if(!modal) return;
+      modal.classList.add('open');
+      document.getElementById('adminPin').value='';
+      document.getElementById('adminPinError').textContent='';
+      document.getElementById('adminPin').focus();
+    }catch(e){
+      Toast.show('Доступ запрещён: '+e.message,'danger');
+    }
+  };
+
+  Admin.verify=async function(){
+    const errorBox=document.getElementById('adminPinError');
+    const pin=document.getElementById('adminPin').value;
+    try{
+      const lvl=await requireLevel(1);
+      if(!pin){errorBox.textContent='Введите пароль/PIN.';return;}
+
+      // Re-authenticate against Supabase. The password is never saved.
+      const c=client();
+      const {data:sessionData,error}=await c.auth.getSession();
+      if(error || !sessionData?.session?.user?.email) throw new Error('Сессия Supabase не найдена.');
+
+      const {error:authError}=await c.auth.signInWithPassword({
+        email:sessionData.session.user.email,
+        password:pin
+      });
+      if(authError){
+        errorBox.textContent='Неверный пароль.';
+        return;
+      }
+
+      this.closePin();
+      await this.open();
+    }catch(e){
+      errorBox.textContent=e.message||'Ошибка проверки.';
+    }
+  };
+
+  Admin.open=async function(){
+    try{
+      await requireLevel(1);
+      document.getElementById('adminModal').classList.add('open');
+      await this.render();
+    }catch(e){
+      Toast.show('Не удалось открыть админ-панель: '+e.message,'danger');
+    }
+  };
+
+  Admin.render=async function(){
+    try{
+      await requireLevel(1);
+
+      const stats=await rpc('admin_dashboard');
+      const players=await getPlayers();
+
+      document.getElementById('adminStats').innerHTML=[
+        ['👥','Игроки',Number(stats?.players||0).toLocaleString('ru-RU')],
+        ['💰','Всего денег',Number(stats?.total_money||0).toLocaleString('ru-RU')+' ₽'],
+        ['⭐','Сумма уровней',Number(stats?.total_level||0).toLocaleString('ru-RU')],
+        ['👑','Админы',Number(stats?.admins||0).toLocaleString('ru-RU')],
+        ['🛡️','Owner',Number(stats?.owner||0).toLocaleString('ru-RU')]
+      ].map(x=>`<div class="stat"><small>${x[0]} ${x[1]}</small><b>${x[2]}</b></div>`).join('');
+
+      document.getElementById('adminPlayers').innerHTML=players.map(u=>{
+        const role=u.role||'player';
+        const status=role==='owner'?'OWNER':role==='player'?'ACTIVE':'ADMIN';
+        return `<tr>
+          <td>${escapeHtml(String(u.username||''))}</td>
+          <td>${Number(u.level||0)}</td>
+          <td>${Number(u.money||0).toLocaleString('ru-RU')} ₽</td>
+          <td>${Number(u.admin_level||0)} (${escapeHtml(role)})</td>
+          <td class="green">${status}</td>
+        </tr>`;
+      }).join('')||'<tr><td colspan="5" class="muted">Игроков нет.</td></tr>';
+
+      const logBox=document.getElementById('adminLogs');
+      if(logBox) logBox.textContent='Серверные логи подключим следующим SQL-этапом.';
+    }catch(e){
+      console.error(e);
+      Toast.show('Ошибка админ-панели: '+(e.message||e),'danger');
+    }
+  };
+
+  Admin.money=async function(){
+    try{
+      await requireLevel(3);
+      const username=document.getElementById('admUser').value.trim();
+      const amount=Math.trunc(Number(document.getElementById('admMoney').value));
+      if(!username)return Toast.show('Укажите ник игрока.','danger');
+      if(!Number.isFinite(amount)||amount===0)return Toast.show('Укажите сумму.','danger');
+
+      const players=await getPlayers();
+      const target=players.find(x=>String(x.username||'').toLowerCase()===username.toLowerCase());
+      if(!target)throw new Error('Игрок не найден.');
+
+      await rpc('admin_change_money',{target_user:target.id,amount});
+      Toast.show('Баланс изменён на сервере.','success');
+      await this.render();
+    }catch(e){Toast.show(e.message||'Ошибка','danger')}
+  };
+
+  Admin.setLevel=async function(){
+    try{
+      await requireLevel(5);
+      const username=document.getElementById('admLevelUser').value.trim();
+      const level=Math.max(1,Math.min(100,Math.trunc(Number(document.getElementById('admLevel').value))));
+      if(!username)return Toast.show('Укажите ник игрока.','danger');
+
+      const players=await getPlayers();
+      const target=players.find(x=>String(x.username||'').toLowerCase()===username.toLowerCase());
+      if(!target)throw new Error('Игрок не найден.');
+
+      await rpc('admin_set_level',{target_user:target.id,new_level:level});
+      Toast.show('Уровень установлен на сервере.','success');
+      await this.render();
+    }catch(e){Toast.show(e.message||'Ошибка','danger')}
+  };
+
+  Admin.admin=async function(){
+    try{
+      await requireLevel(5);
+      const username=document.getElementById('admAdminUser').value.trim();
+      const level=Number(document.getElementById('admAdminLevel').value);
+      if(!username)return Toast.show('Укажите ник игрока.','danger');
+
+      const players=await getPlayers();
+      const target=players.find(x=>String(x.username||'').toLowerCase()===username.toLowerCase());
+      if(!target)throw new Error('Игрок не найден.');
+
+      const role=ROLE_BY_LEVEL[level]||'player';
+      await rpc('admin_set_role',{
+        target_user:target.id,
+        new_role:role,
+        new_admin_level:level
+      });
+
+      Toast.show(level?'Права выданы на сервере.':'Админка снята на сервере.','success');
+      await this.render();
+    }catch(e){Toast.show(e.message||'Ошибка','danger')}
+  };
+
+  Admin.ban=function(){
+    Toast.show('Система банов подключается следующим SQL-этапом.','danger');
+  };
+  Admin.unban=function(){
+    Toast.show('Система банов подключается следующим SQL-этапом.','danger');
+  };
+
+  // Replace the old local Ctrl+Q handler with the server-authoritative one.
+  document.addEventListener('keydown',async function(e){
+    if(e.ctrlKey&&!e.shiftKey&&e.key.toLowerCase()==='q'){
+      e.preventDefault();
+      e.stopImmediatePropagation();
+
+      const modal=document.getElementById('adminModal');
+      const pin=document.getElementById('adminPinModal');
+
+      if(modal?.classList.contains('open')){
+        Admin.close();
+        return;
+      }
+      if(pin?.classList.contains('open')){
+        Admin.closePin();
+        return;
+      }
+      await Admin.openPin();
+    }
+  },true);
+
+  setTimeout(()=>Admin.refreshRole().catch(()=>{}),1500);
+})();
+</script>
+
+</body>
+</html>
